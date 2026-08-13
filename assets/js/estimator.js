@@ -54,14 +54,14 @@
      ------------------------------------------------------------------ */
   var MEATS = [
     { id: 'ribs', name: 'Ribs', confirmed: true, sizes: [
-      { label: 'Full pan', short: 'FULL', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 pan',  short: '1/2',  price: 99.99,  serves: 12, unit: 'half' },
-      { label: '1/3 pan',  short: '1/3',  price: 49.99,  serves: 8,  unit: 'third' }
+      { label: 'Full Pan', short: 'FULL', price: 199.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  short: '1/2',  price: 99.99,  serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  short: '1/3',  price: 49.99,  serves: 8,  unit: 'third' }
     ]},
     { id: 'rib-tips', name: 'Rib Tips', confirmed: true, sizes: [
-      { label: 'Full pan', short: 'FULL', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 pan',  short: '1/2',  price: 119.99, serves: 12, unit: 'half' },
-      { label: '1/3 pan',  short: '1/3',  price: 59.99,  serves: 8,  unit: 'third' }
+      { label: 'Full Pan', short: 'FULL', price: 199.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  short: '1/2',  price: 119.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  short: '1/3',  price: 59.99,  serves: 8,  unit: 'third' }
     ]},
     { id: 'brisket', name: 'Brisket', confirmed: true, sizes: [
       { label: '8 lbs', short: '8LB', price: 350.99, serves: 24, unit: 'lb' },
@@ -69,43 +69,43 @@
       { label: '2 lbs', short: '2LB', price: 85.99,  serves: 6,  unit: 'lb' }
     ]},
     { id: 'pulled-pork', name: 'Pulled Pork', confirmed: true, sizes: [
-      { label: 'Full pan', short: 'FULL', price: 159.99, serves: 24, unit: 'full' },
-      { label: '1/2 pan',  short: '1/2',  price: 79.99,  serves: 12, unit: 'half' },
-      { label: '1/3 pan',  short: '1/3',  price: 39.99,  serves: 8,  unit: 'third' }
+      { label: 'Full Pan', short: 'FULL', price: 159.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  short: '1/2',  price: 79.99,  serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  short: '1/3',  price: 39.99,  serves: 8,  unit: 'third' }
     ]},
     { id: 'pulled-beef', name: 'Pulled Beef', confirmed: true, sizes: [
-      { label: 'Full pan', short: 'FULL', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 pan',  short: '1/2',  price: 99.99,  serves: 12, unit: 'half' },
-      { label: '1/3 pan',  short: '1/3',  price: 49.99,  serves: 8,  unit: 'third' }
+      { label: 'Full Pan', short: 'FULL', price: 199.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  short: '1/2',  price: 99.99,  serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  short: '1/3',  price: 49.99,  serves: 8,  unit: 'third' }
     ]},
     { id: 'pulled-chicken', name: 'Pulled Chicken', confirmed: true, sizes: [
-      { label: 'Full pan', short: 'FULL', price: 159.99, serves: 24, unit: 'full' },
-      { label: '1/2 pan',  short: '1/2',  price: 79.99,  serves: 12, unit: 'half' },
-      { label: '1/3 pan',  short: '1/3',  price: 39.99,  serves: 8,  unit: 'third' }
+      { label: 'Full Pan', short: 'FULL', price: 159.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  short: '1/2',  price: 79.99,  serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  short: '1/3',  price: 39.99,  serves: 8,  unit: 'third' }
     ]},
     { id: 'bbq-chicken', name: 'BBQ Chicken', confirmed: true, sizes: [
-      { label: 'Full pan', short: 'FULL', price: 170.99, serves: 24, unit: 'full' },
-      { label: '1/2 pan',  short: '1/2',  price: 85.99,  serves: 12, unit: 'half' },
-      { label: '1/3 pan',  short: '1/3',  price: 45.99,  serves: 8,  unit: 'third' }
+      { label: 'Full Pan', short: 'FULL', price: 170.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  short: '1/2',  price: 85.99,  serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  short: '1/3',  price: 45.99,  serves: 8,  unit: 'third' }
     ]},
     { id: 'baked-chicken', name: 'Baked Chicken', confirmed: true, sizes: [
-      { label: '100 pieces', short: '100PC', price: 159.99, serves: 50, unit: 'pc' },
-      { label: '50 pieces',  short: '50PC',  price: 79.99,  serves: 25, unit: 'pc' },
-      { label: '25 pieces',  short: '25PC',  price: 35.99,  serves: 12, unit: 'pc' }
+      { label: '100 Pieces', short: '100PC', price: 159.99, serves: 50, unit: 'pc' },
+      { label: '50 Pieces',  short: '50PC',  price: 79.99,  serves: 25, unit: 'pc' },
+      { label: '25 Pieces',  short: '25PC',  price: 35.99,  serves: 12, unit: 'pc' }
     ]},
     { id: 'fried-chicken', name: 'Fried Chicken', confirmed: true, sizes: [
-      { label: '100 pieces', short: '100PC', price: 159.99, serves: 50, unit: 'pc' },
-      { label: '50 pieces',  short: '50PC',  price: 79.99,  serves: 25, unit: 'pc' },
-      { label: '25 pieces',  short: '25PC',  price: 35.99,  serves: 12, unit: 'pc' }
+      { label: '100 Pieces', short: '100PC', price: 159.99, serves: 50, unit: 'pc' },
+      { label: '50 Pieces',  short: '50PC',  price: 79.99,  serves: 25, unit: 'pc' },
+      { label: '25 Pieces',  short: '25PC',  price: 35.99,  serves: 12, unit: 'pc' }
     ]}
   ];
 
   var SIDES = [
     // Confirmed pan pricing from the catering list.
     { id: 'mac', name: 'Mac & Cheese', confirmed: true, sizes: [
-      { label: 'Full pan', short: 'FULL', price: 159.99, serves: 30, unit: 'full' },
-      { label: '1/2 pan',  short: '1/2',  price: 79.99,  serves: 15, unit: 'half' },
-      { label: '1/3 pan',  short: '1/3',  price: 39.99,  serves: 10, unit: 'third' }
+      { label: 'Full Pan', short: 'FULL', price: 159.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  short: '1/2',  price: 79.99,  serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  short: '1/3',  price: 39.99,  serves: 10, unit: 'third' }
     ]},
     /* --------------------------------------------------------------
        The three sides below are ESTIMATED. Stadium 1 sells them by
@@ -114,30 +114,32 @@
        ACTION: confirm these three with Shon and set `confirmed: true`.
        -------------------------------------------------------------- */
     { id: 'beans', name: 'Baked Beans', confirmed: false, sizes: [
-      { label: 'Full pan', short: 'FULL', price: 99.99, serves: 30, unit: 'full' },
-      { label: '1/2 pan',  short: '1/2',  price: 49.99, serves: 15, unit: 'half' },
-      { label: '1/3 pan',  short: '1/3',  price: 29.99, serves: 10, unit: 'third' }
+      { label: 'Full Pan', short: 'FULL', price: 99.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  short: '1/2',  price: 49.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  short: '1/3',  price: 29.99, serves: 10, unit: 'third' }
     ]},
     { id: 'slaw', name: 'Cole Slaw', confirmed: false, sizes: [
-      { label: 'Full pan', short: 'FULL', price: 99.99, serves: 30, unit: 'full' },
-      { label: '1/2 pan',  short: '1/2',  price: 49.99, serves: 15, unit: 'half' },
-      { label: '1/3 pan',  short: '1/3',  price: 29.99, serves: 10, unit: 'third' }
+      { label: 'Full Pan', short: 'FULL', price: 99.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  short: '1/2',  price: 49.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  short: '1/3',  price: 29.99, serves: 10, unit: 'third' }
     ]},
     { id: 'green-beans', name: 'Green Beans', confirmed: false, sizes: [
-      { label: 'Full pan', short: 'FULL', price: 99.99, serves: 30, unit: 'full' },
-      { label: '1/2 pan',  short: '1/2',  price: 49.99, serves: 15, unit: 'half' },
-      { label: '1/3 pan',  short: '1/3',  price: 29.99, serves: 10, unit: 'third' }
+      { label: 'Full Pan', short: 'FULL', price: 99.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  short: '1/2',  price: 49.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  short: '1/3',  price: 29.99, serves: 10, unit: 'third' }
     ]}
   ];
 
+  /* These strings must match the <option> text in the quote form on
+     catering.html exactly — the handoff sets the select by value. */
   var EVENT_TYPES = [
-    'Corporate meeting', 'Team building', 'Warehouse event',
-    'Repast', 'Holiday party', 'Family gathering', 'Wedding', 'Other'
+    'Corporate Meeting', 'Team Building', 'Warehouse Event',
+    'Repast', 'Holiday Party', 'Family Gathering', 'Wedding', 'Other'
   ];
 
   var SERVICE = [
     { id: 'dropoff', name: 'Drop-off', note: 'Hot and ready in pans. You serve.' },
-    { id: 'full',    name: 'Full service', note: 'We set up, serve and clean up.' }
+    { id: 'full',    name: 'Full Service', note: 'We set up, serve and clean up.' }
   ];
 
   /* ------------------------------------------------------------------
@@ -500,7 +502,7 @@
 
       set('guests', state.guests);
       if (state.eventType) set('event_type', state.eventType);
-      set('service_style', state.service === 'full' ? 'Full service' : 'Drop-off');
+      set('service_style', state.service === 'full' ? 'Full Service' : 'Drop-off');
       set('budget', money(roundTo(result.low, 25)) + ' – ' + money(roundTo(result.high, 25)));
 
       var menuNames = result.builds.map(function (b) { return b.item.name; }).join(', ');
@@ -511,7 +513,7 @@
         summary.value =
           'Built with the cookout estimator:\n' +
           state.guests + ' guests' + (state.eventType ? ' · ' + state.eventType : '') + '\n' +
-          (state.service === 'full' ? 'Full service' : 'Drop-off') + '\n' +
+          (state.service === 'full' ? 'Full Service' : 'Drop-off') + '\n' +
           result.builds.map(function (b) {
             return '• ' + b.item.name + ' — ' + b.lines.map(function (l) {
               return l.qty + '× ' + l.size.label;
