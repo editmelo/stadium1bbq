@@ -1,18 +1,38 @@
 # Stadium 1 BBQ & More — website
 
-A five-page static site. No build step, no dependencies, no framework. Open
-`index.html` in a browser and it works.
+A five-page static site. No build step, no dependencies, no framework.
+
+Run it locally with `python3 -m http.server 8080` and open
+<http://localhost:8080>. Use a server rather than opening the files
+directly — the clean URLs below depend on one.
 
 ```
-index.html        Home — splits the two audiences (catering vs. plates)
-catering.html     The money page. Cookout builder + quote form
-menu.html         Full menu and prices
-find-us.html      Market plates, locations, Facebook
-about.html        Story, what makes them different, contact form
-assets/css/       One stylesheet
-assets/js/        site.js (nav, reveals, forms) + estimator.js (the builder)
-assets/img/       Photography and logo
+index.html              /            Home — splits catering vs. plates
+catering/index.html     /catering    The money page. Cookout builder + quote form
+menu/index.html         /menu        Full menu and prices
+find-us/index.html      /find-us     Market plates, locations, Facebook
+about/index.html        /about       Story, what sets them apart, contact form
+assets/css/                          One stylesheet
+assets/js/                           site.js (nav, reveals, forms) + estimator.js
+assets/img/                          Photography and logo
 ```
+
+### Why a folder per page
+
+URLs are `/catering`, not `/catering.html`. The page lives at
+`catering/index.html`, which every static host serves at `/catering` with
+no configuration at all — Netlify, Vercel, GitHub Pages, Apache, nginx and
+Python's `http.server` all do this out of the box. Host-level "clean URL"
+settings would work too, but they'd tie the site to one host.
+
+Two consequences worth knowing:
+
+- **Links between pages are relative.** From a subpage, the home page is
+  `../` and a sibling is `../menu/`. Assets are `../assets/…`. Relative
+  paths mean the site also works from a subfolder, e.g. a GitHub Pages
+  project URL. Adding a new page means a new folder, not a new `.html`.
+- `<link rel="canonical">` and `og:url` on every page point at the clean
+  address, so `/index.html` still resolving does not create a duplicate.
 
 ---
 
@@ -167,11 +187,34 @@ estimate rounds to whole dollars.
 ## Deploying
 
 Drag the folder onto Netlify, or push to a repo and point Vercel or GitHub
-Pages at it. Any host that serves static files works, including dropping the
-files into an existing Square Online or Webador site.
+Pages at it. Any host that serves static files works.
 
-Update the domain in `sitemap.xml` and the `<link rel="canonical">` tag on
+Update the domain in `sitemap.xml` and in the `canonical` / `og:url` tags on
 each page if it lands anywhere other than `stadium1bbq.com`.
+
+### Redirect the old URLs when this replaces the live site
+
+The current `stadium1bbq.com` has pages indexed by Google under different
+addresses. If they are left to 404, that search traffic is thrown away.
+Point them at the new equivalents:
+
+| Old URL | Send to |
+|---|---|
+| `/all-about-stadium-1-bbq` | `/about` |
+| `/savory-menu` | `/menu` |
+| `/dessert-menu` | `/menu` |
+| `/catering-options` | `/catering` |
+| `/promotions`, `/upcoming-promo` | `/find-us` |
+| `/contact` | `/about` |
+| `/menus`, `/product/*` | `/menu` |
+| `/careers` | `/about` |
+
+`/catering` and `/about` already existed on the older version of the site
+and keep working unchanged.
+
+A Netlify `_redirects` file is included with exactly these rules; it is
+ignored by other hosts. On Vercel the same thing goes in `vercel.json` as
+a `redirects` array, and on Apache in `.htaccess` as `Redirect 301` lines.
 
 ---
 

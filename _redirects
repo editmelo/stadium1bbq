@@ -1,0 +1,21 @@
+# Old stadium1bbq.com URLs -> their new homes.
+# Netlify reads this file. Other hosts ignore it; see README.md for the
+# vercel.json and .htaccess equivalents.
+
+/all-about-stadium-1-bbq   /about      301
+/savory-menu               /menu       301
+/dessert-menu              /menu       301
+/catering-options          /catering   301
+/catering-store-v2         /catering   301
+/promotions                /find-us    301
+/upcoming-promo            /find-us    301
+/contact                   /about      301
+/menus                     /menu       301
+/menus-coming-soon         /menu       301
+/careers                   /about      301
+/product/*                 /menu       301
+
+# Storefront leftovers that have no equivalent here.
+/cart                      /menu       301
+/wishlist                  /menu       301
+/account/*                 /           301
