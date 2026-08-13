@@ -49,7 +49,7 @@ at the phone and email instead. Nothing silently disappears and nothing
 falsely says "thank you, we'll be in touch."
 
 To connect them, pick a form service (Formspree, Basin and Netlify Forms all
-work on a static site), then in `catering.html` and `about.html`:
+work on a static site), then in `catering/index.html` and `about/index.html`:
 
 ```html
 <!-- change this -->
@@ -81,7 +81,7 @@ inferences from the packet, not numbers Shon gave directly.
 
 The site uses **(317) 332-1327** — the number published on the old site and
 on Yelp. The foundation packet listed (317) 802-0325; if that's the one Shon
-wants customers calling, it's a find-and-replace across the five HTML files
+wants customers calling, it's a find-and-replace across the five page files
 and `assets/js/site.js`.
 
 ### 4. Photography — only Shon's own photos are used
@@ -123,7 +123,7 @@ treatment for an image. On a hero, replace `class="hero hero--type"` with
 ```html
 <section class="hero hero--bright">
   <div class="hero__media">
-    <img src="assets/img/your-photo.jpg" alt="" fetchpriority="high">
+    <img src="/assets/img/your-photo.jpg" alt="" fetchpriority="high">
   </div>
   ...
 ```
