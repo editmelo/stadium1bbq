@@ -2,6 +2,9 @@
 # Netlify reads this file. Other hosts ignore it; see README.md for the
 # vercel.json and .htaccess equivalents.
 
+/                          /home       301
+/index.html                /home       301
+
 /all-about-stadium-1-bbq   /about      301
 /savory-menu               /menu       301
 /dessert-menu              /menu       301
@@ -18,4 +21,4 @@
 # Storefront leftovers that have no equivalent here.
 /cart                      /menu       301
 /wishlist                  /menu       301
-/account/*                 /           301
+/account/*                 /home       301

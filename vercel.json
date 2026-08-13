@@ -1,35 +1,114 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "trailingSlash": true,
+  "trailingSlash": false,
   "redirects": [
-    { "source": "/all-about-stadium-1-bbq", "destination": "/about", "permanent": true },
-    { "source": "/savory-menu",             "destination": "/menu",     "permanent": true },
-    { "source": "/dessert-menu",            "destination": "/menu",     "permanent": true },
-    { "source": "/menus",                   "destination": "/menu",     "permanent": true },
-    { "source": "/menus-coming-soon",       "destination": "/menu",     "permanent": true },
-    { "source": "/product/:path*",          "destination": "/menu",     "permanent": true },
-    { "source": "/catering-options",        "destination": "/catering", "permanent": true },
-    { "source": "/catering-store-v2",       "destination": "/catering", "permanent": true },
-    { "source": "/promotions",              "destination": "/find-us",  "permanent": true },
-    { "source": "/upcoming-promo",          "destination": "/find-us",  "permanent": true },
-    { "source": "/contact",                 "destination": "/about",    "permanent": true },
-    { "source": "/careers",                 "destination": "/about",    "permanent": true },
-    { "source": "/cart",                    "destination": "/menu",     "permanent": true },
-    { "source": "/wishlist",                "destination": "/menu",     "permanent": true },
-    { "source": "/account/:path*",          "destination": "/",         "permanent": true }
+    {
+      "source": "/",
+      "destination": "/home",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "destination": "/home",
+      "permanent": true
+    },
+    {
+      "source": "/all-about-stadium-1-bbq",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/savory-menu",
+      "destination": "/menu",
+      "permanent": true
+    },
+    {
+      "source": "/dessert-menu",
+      "destination": "/menu",
+      "permanent": true
+    },
+    {
+      "source": "/menus",
+      "destination": "/menu",
+      "permanent": true
+    },
+    {
+      "source": "/menus-coming-soon",
+      "destination": "/menu",
+      "permanent": true
+    },
+    {
+      "source": "/product/:path*",
+      "destination": "/menu",
+      "permanent": true
+    },
+    {
+      "source": "/catering-options",
+      "destination": "/catering",
+      "permanent": true
+    },
+    {
+      "source": "/catering-store-v2",
+      "destination": "/catering",
+      "permanent": true
+    },
+    {
+      "source": "/promotions",
+      "destination": "/find-us",
+      "permanent": true
+    },
+    {
+      "source": "/upcoming-promo",
+      "destination": "/find-us",
+      "permanent": true
+    },
+    {
+      "source": "/contact",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/careers",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/cart",
+      "destination": "/menu",
+      "permanent": true
+    },
+    {
+      "source": "/wishlist",
+      "destination": "/menu",
+      "permanent": true
+    },
+    {
+      "source": "/account/:path*",
+      "destination": "/home",
+      "permanent": true
+    }
   ],
   "headers": [
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     }
   ]

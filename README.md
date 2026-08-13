@@ -7,32 +7,33 @@ Run it locally with `python3 -m http.server 8080` and open
 directly — the clean URLs below depend on one.
 
 ```
-index.html              /            Home — splits catering vs. plates
+home/index.html         /home        Home — splits catering vs. plates
 catering/index.html     /catering    The money page. Cookout builder + quote form
 menu/index.html         /menu        Full menu and prices
 find-us/index.html      /find-us     Market plates, locations, Facebook
 about/index.html        /about       Story, what sets them apart, contact form
-assets/css/                          One stylesheet
-assets/js/                           site.js (nav, reveals, forms) + estimator.js
-assets/img/                          Photography and logo
+index.html                           Redirect stub: bare domain -> /home
+assets/                              Stylesheet, scripts, photography, logo
+vercel.json                          Redirects, caching, headers (the live host)
+_redirects                           The same redirects for Netlify
 ```
 
-### Why a folder per page
+### URLs
 
-URLs are `/catering`, not `/catering.html`. The page lives at
-`catering/index.html`, which every static host serves at `/catering` with
-no configuration at all — Netlify, Vercel, GitHub Pages, Apache, nginx and
-Python's `http.server` all do this out of the box. Host-level "clean URL"
-settings would work too, but they'd tie the site to one host.
+Every page is a folder containing `index.html`, which every static host
+serves at the clean path with no configuration. `/catering.html` is gone.
 
-Two consequences worth knowing:
+The home page lives at **`/home`**, not at the bare domain. `vercel.json`
+sends `/` and `/index.html` there with a 308, and the small `index.html`
+at the root does the same thing with a meta refresh for any host that has
+no redirect rules. `trailingSlash` is `false`, so the address bar reads
+`/home` rather than `/home/`.
 
-- **Links between pages are relative.** From a subpage, the home page is
-  `../` and a sibling is `../menu/`. Assets are `../assets/…`. Relative
-  paths mean the site also works from a subfolder, e.g. a GitHub Pages
-  project URL. Adding a new page means a new folder, not a new `.html`.
-- `<link rel="canonical">` and `og:url` on every page point at the clean
-  address, so `/index.html` still resolving does not create a duplicate.
+Links are root-relative (`/menu`, `/assets/…`). That assumes the site is
+served from a domain root, which it is on Vercel. If it ever has to live
+in a subfolder, those would need to become relative again.
+
+Adding a page means adding a folder, not a `.html` file.
 
 ---
 
@@ -186,11 +187,16 @@ estimate rounds to whole dollars.
 
 ## Deploying
 
-Drag the folder onto Netlify, or push to a repo and point Vercel or GitHub
-Pages at it. Any host that serves static files works.
+The site is hosted on **Vercel**, deploying automatically from `main` on
+this GitHub repo. Push and it ships; there is no build step. The review
+build is at <https://stadium1bbq.revieweditmelo.com>.
 
-Update the domain in `sitemap.xml` and in the `canonical` / `og:url` tags on
-each page if it lands anywhere other than `stadium1bbq.com`.
+`vercel.json` carries the redirects, a year-long immutable cache on
+`/assets` (pages themselves stay uncached, so copy edits appear at once)
+and two security headers.
+
+Update the domain in `sitemap.xml` and in the `canonical` / `og:url` tags
+if the site lands anywhere other than `stadium1bbq.com`.
 
 ### Redirect the old URLs when this replaces the live site
 
