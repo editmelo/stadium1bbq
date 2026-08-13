@@ -884,6 +884,24 @@ input[type="range"]::-moz-range-thumb {
 }
 .footer__bottom p { margin: 0; }
 
+/* Studio credit sits to the right of the copyright line, and wraps
+   underneath it rather than crowding on narrow screens. */
+/* Scoped to beat `.footer__bottom p { margin: 0 }`, which is more
+   specific than a bare `.footer__credit` and would cancel the auto margin. */
+.footer__bottom .footer__credit { margin-left: auto; }
+.footer__credit a {
+  color: var(--smoke);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,138,31,.45);
+  padding-bottom: 1px;
+  transition: color .18s var(--ease), border-color .18s var(--ease);
+}
+.footer__credit a:hover { color: var(--gold); border-bottom-color: var(--gold); }
+
+@media (max-width: 620px) {
+  .footer__bottom .footer__credit { margin-left: 0; width: 100%; }
+}
+
 /* --------------------------------------------------------------------------
    18. Motion
    -------------------------------------------------------------------------- */
