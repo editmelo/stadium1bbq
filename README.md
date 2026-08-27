@@ -200,21 +200,33 @@ The site is hosted on **Vercel**, deploying automatically from `main` on
 this GitHub repo. Push and it ships; there is no build step. The review
 build is at <https://stadium1bbq.revieweditmelo.com>.
 
-`vercel.json` carries the redirects, a year-long immutable cache on
-`/assets` (pages themselves stay uncached, so copy edits appear at once)
-and two security headers.
+### Caching — read this before changing an asset
+
+Filenames here are stable (`site.css`, not `site.a1b2c3.css`), so the
+stylesheet and scripts are served `must-revalidate`. Browsers re-check
+them on every visit and get a 304 when nothing changed, which costs a few
+hundred bytes and means an edit always reaches people. Images get seven
+days, since they are the heavy files and rarely change.
+
+They must **never** be served `immutable`. That tells a browser not even
+to ask again, and with stable filenames a fix can then never reach anyone
+who has already visited.
+
+Asset URLs in the HTML carry `?v=2`. If you change a stylesheet or script
+and want it to land instantly for everyone — including anyone holding a
+stale copy — bump that number everywhere it appears:
+
+```
+grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=2/?v=3/g'
+```
+
+The `og:image` and schema URLs deliberately have no version, so social
+and search keep one stable address for the image.
 
 Update the domain in `sitemap.xml` and in the `canonical` / `og:url` tags
 if the site lands anywhere other than `stadium1bbq.com`.
 
-### Redirect the old URLs when this replaces the live site
-
-The current `stadium1bbq.com` has pages indexed by Google under different
-addresses. If they are left to 404, that search traffic is thrown away.
-Point them at the new equivalents:
-
-| Old URL | Send to |
-|---|---|
+---|---|
 | `/all-about-stadium-1-bbq` | `/about` |
 | `/savory-menu` | `/menu` |
 | `/dessert-menu` | `/menu` |

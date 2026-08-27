@@ -514,6 +514,36 @@
         money(roundTo(result.high, 25)) + '\n' + BUILD_END;
     }
 
+    /* Take out whatever build is already in the box so the new one
+       replaces it rather than stacking on top.
+
+       Three shapes have to be recognised: the marked block written by
+       this code, a marked block whose end marker the visitor deleted,
+       and the older unmarked summary written before the markers existed
+       — anyone who used the builder before this change still has one of
+       those sitting in their form. */
+    var LEGACY_START = 'Built with the cookout estimator:';
+    var TAIL = 'Estimate shown:';
+
+    function cutThroughTail(text, from) {
+      var tail = text.indexOf(TAIL, from);
+      if (tail < 0) return text.slice(0, from);
+      var lineEnd = text.indexOf('\n', tail);
+      return text.slice(0, from) + (lineEnd < 0 ? '' : text.slice(lineEnd + 1));
+    }
+
+    function removeOldBuild(text) {
+      var from = text.indexOf(BUILD_START);
+      if (from > -1) {
+        var to = text.indexOf(BUILD_END, from);
+        return to > from
+          ? text.slice(0, from) + text.slice(to + BUILD_END.length)
+          : cutThroughTail(text, from);
+      }
+      from = text.indexOf(LEGACY_START);
+      return from > -1 ? cutThroughTail(text, from) : text;
+    }
+
     /* Briefly outline a field so a repeat click visibly does something. */
     var flashTimers = [];
     function flash(field) {
@@ -558,17 +588,9 @@
       var notes = form.querySelector('[name="message"]');
       if (notes) {
         var summary = buildSummary(result);
-        var existing = notes.value;
-        var from = existing.indexOf(BUILD_START);
-        var to = existing.indexOf(BUILD_END);
+        var existing = removeOldBuild(notes.value);
 
-        if (from > -1 && to > from) {
-          notes.value = existing.slice(0, from) + summary + existing.slice(to + BUILD_END.length);
-        } else if (existing.trim()) {
-          notes.value = summary + '\n\n' + existing;
-        } else {
-          notes.value = summary;
-        }
+        notes.value = existing.trim() ? summary + '\n\n' + existing.trim() : summary;
         flash(notes);
       }
 
