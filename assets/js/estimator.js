@@ -497,12 +497,11 @@
        Anything typed by hand — name, phone, their own notes — is kept.
        ------------------------------------------------------------------ */
 
-    var BUILD_START = '--- My cookout build ---';
-    var BUILD_END = '--- end of build ---';
+    var BUILD_HEADER = 'MY COOKOUT BUILD';
     var handedOff = false;
 
     function buildSummary(result) {
-      return BUILD_START + '\n' +
+      return BUILD_HEADER + '\n' +
         state.guests + ' guests' + (state.eventType ? ' \u00b7 ' + state.eventType : '') + '\n' +
         (state.service === 'full' ? 'Full Service' : 'Drop-off') + '\n' +
         result.builds.map(function (b) {
@@ -511,37 +510,49 @@
           }).join(' + ');
         }).join('\n') + '\n' +
         'Estimate shown: ' + money(roundTo(result.low, 25)) + ' \u2013 ' +
-        money(roundTo(result.high, 25)) + '\n' + BUILD_END;
+        money(roundTo(result.high, 25));
     }
 
     /* Take out whatever build is already in the box so the new one
        replaces it rather than stacking on top.
 
-       Three shapes have to be recognised: the marked block written by
-       this code, a marked block whose end marker the visitor deleted,
-       and the older unmarked summary written before the markers existed
-       — anyone who used the builder before this change still has one of
-       those sitting in their form. */
-    var LEGACY_START = 'Built with the cookout estimator:';
+       There is no closing marker to look for, so the block runs from its
+       heading to the blank line that always separates it from anything
+       the visitor wrote. The build itself never contains a blank line.
+
+       Older shapes still have to be recognised, because anyone who used
+       the builder before now has one of them sitting in their form: the
+       fenced version with an explicit end marker, and the original
+       unmarked summary. */
+    var OLD_HEADERS = ['--- My cookout build ---', 'Built with the cookout estimator:'];
+    var OLD_END = '--- end of build ---';
     var TAIL = 'Estimate shown:';
 
-    function cutThroughTail(text, from) {
+    function blockEnd(text, from) {
+      var blank = text.indexOf('\n\n', from);
+
+      // A fenced old block ends at its marker, which sits before that blank line.
+      var fence = text.indexOf(OLD_END, from);
+      if (fence > -1 && (blank === -1 || fence < blank)) return fence + OLD_END.length;
+
+      if (blank > -1) return blank;
+
+      // No blank line: stop after the last line the builder writes.
       var tail = text.indexOf(TAIL, from);
-      if (tail < 0) return text.slice(0, from);
-      var lineEnd = text.indexOf('\n', tail);
-      return text.slice(0, from) + (lineEnd < 0 ? '' : text.slice(lineEnd + 1));
+      if (tail > -1) {
+        var nl = text.indexOf('\n', tail);
+        return nl === -1 ? text.length : nl;
+      }
+      return text.length;
     }
 
     function removeOldBuild(text) {
-      var from = text.indexOf(BUILD_START);
-      if (from > -1) {
-        var to = text.indexOf(BUILD_END, from);
-        return to > from
-          ? text.slice(0, from) + text.slice(to + BUILD_END.length)
-          : cutThroughTail(text, from);
+      var headers = [BUILD_HEADER].concat(OLD_HEADERS);
+      for (var i = 0; i < headers.length; i++) {
+        var from = text.indexOf(headers[i]);
+        if (from > -1) return text.slice(0, from) + text.slice(blockEnd(text, from));
       }
-      from = text.indexOf(LEGACY_START);
-      return from > -1 ? cutThroughTail(text, from) : text;
+      return text;
     }
 
     /* Briefly outline a field so a repeat click visibly does something. */
