@@ -84,14 +84,27 @@ on Yelp. The foundation packet listed (317) 802-0325; if that's the one Shon
 wants customers calling, it's a find-and-replace across the five page files
 and `assets/js/site.js`.
 
-### 4. Photography — only Shon's own photos are used
+### 4. Photography — all Shon's own
 
-The old site was mostly **stock imagery** (Vecteezy / AI-generated) with
-unverified licensing. All of it has been removed. The site now ships with
-exactly three photographs, all Shon's own, shot on a phone:
+Shon supplied a photo library in August 2026. Thirty-four photographs were
+selected, rotated to their correct orientation, cropped and compressed into
+`assets/img`. Each one exists twice: `name.jpg` at 1000×750 for display and
+`name-thumb.jpg` at 200×200 for the menu rows.
 
-| File | Where it appears |
-|---|---|
+Nothing on the site is stock any more. The AI-generated marketing graphics in
+the library (the `file_…` files and the "Cheese be Cheesing" mascot) were
+deliberately left out, so every photograph is genuinely the food.
+
+To add or replace one, run the same treatment — the source is in the client
+folder, and the processing script pattern is: correct the EXIF rotation, crop
+to 4:3, resize to 1000px, save at quality 76, then crop a 200px square for the
+thumbnail. Cameras store rotation as metadata rather than rotating the pixels,
+so skipping that step leaves photos on their side.
+
+**Still worth shooting:** Shon at the pit, a catering table before anyone
+eats, and a wide shot of a repast or corporate spread.
+
+---|---|
 | `rib-tips.jpg` | Home hero, and the Find Us closing block |
 | `mac-and-cheese.jpg` | Home — the word-of-mouth section |
 | `trifle.jpg` | Menu desserts, and the About story |
@@ -130,6 +143,29 @@ treatment for an image. On a hero, replace `class="hero hero--type"` with
 
 On a dish card, add `<div class="dish__img"><img src="…" alt="…"
 loading="lazy"></div>` as the first child of the `<article class="dish">`.
+
+---
+
+## Photographs on the menu
+
+Every priced item that has a photograph carries a thumbnail beside its name,
+and on screens 1080px and wider a larger version appears in a sticky panel to
+the right of the price list when the row is hovered or focused.
+
+The thumbnail is real markup with real alt text, so the food is visible with
+JavaScript off, on a phone, and to a screen reader. The panel is an
+enhancement built by `assets/js/menu.js` only when there is room for it, and
+torn down again if the window is narrowed.
+
+To give an item a photograph:
+
+1. Add `photo.jpg` and `photo-thumb.jpg` to `assets/img`
+2. Put `data-shot="photo" data-shot-label="Item Name"` on its `<tr>`
+3. Wrap the item cell in `.menu-item` with the thumbnail, matching a row that
+   already has one
+
+Rows with no photograph use `.menu-item__thumb--none`, an invisible spacer
+that keeps every dish name on the same left edge.
 
 ---
 
@@ -218,12 +254,12 @@ They must **never** be served `immutable`. That tells a browser not even
 to ask again, and with stable filenames a fix can then never reach anyone
 who has already visited.
 
-Asset URLs in the HTML carry `?v=6`. If you change a stylesheet or script
+Asset URLs in the HTML carry `?v=8`. If you change a stylesheet or script
 and want it to land instantly for everyone — including anyone holding a
 stale copy — bump that number everywhere it appears:
 
 ```
-grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=6/?v=7/g'
+grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=8/?v=9/g'
 ```
 
 The `og:image` and schema URLs deliberately have no version, so social

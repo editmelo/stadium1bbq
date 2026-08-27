@@ -801,6 +801,124 @@ input[type="range"]::-moz-range-thumb {
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
 /* --------------------------------------------------------------------------
+   14b. Menu photographs
+   -------------------------------------------------------------------------- */
+
+/* Price list on the left, a photograph of the hovered item on the right. */
+.menu-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3.5rem);
+  align-items: start;
+}
+@media (min-width: 1080px) {
+  .menu-layout { grid-template-columns: minmax(0, 1fr) 360px; }
+}
+
+/* Thumbnail sat beside the dish name, on every screen size. */
+.menu-item { display: flex; align-items: center; gap: 0.85rem; }
+.menu-item__thumb {
+  width: 48px; height: 48px; flex: none;
+  border-radius: 6px; object-fit: cover;
+  border: 1px solid rgba(247,239,226,.14);
+  background: var(--ash);
+}
+.band--cream .menu-item__thumb { border-color: rgba(26,19,16,.14); }
+
+/* Rows with no photograph keep the same indent so every dish name lines
+   up, without drawing attention to the gap. */
+.menu-item__thumb--none { border: 0; background: none; }
+
+/* Smaller on phones so the price columns need less sideways swiping. */
+@media (max-width: 480px) {
+  .menu-item { gap: 0.6rem; }
+  .menu-item__thumb { width: 38px; height: 38px; }
+}
+.menu-item__text { min-width: 0; }
+
+tr[data-shot] { cursor: default; }
+tr[data-shot]:hover .menu-item__thumb,
+tr[data-shot]:focus-within .menu-item__thumb { border-color: var(--flame); }
+tr[data-shot]:focus { outline: none; }
+tr[data-shot]:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
+
+/* The panel itself */
+.menu-preview { position: sticky; top: 96px; }
+.menu-preview[hidden] { display: none; }
+
+.menu-preview__frame {
+  border: 1px solid rgba(247,239,226,.12);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--soot);
+}
+.menu-preview__img {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  display: block; background: var(--ash);
+}
+.menu-preview__caption {
+  font-family: var(--display); font-weight: 800;
+  text-transform: uppercase; font-size: 1.5rem;
+  letter-spacing: 0.01em; line-height: 1;
+  margin: 0; padding: 1rem 1.15rem 1.15rem;
+  color: var(--cream);
+}
+.menu-preview__hint {
+  font-family: var(--ticket); font-size: 0.62rem;
+  text-transform: uppercase; letter-spacing: 0.15em;
+  color: var(--smoke-dim); text-align: center;
+  margin: 0.85rem 0 0;
+}
+
+/* A short fade when the photograph changes. */
+@media (prefers-reduced-motion: no-preference) {
+  .menu-preview.is-swapping .menu-preview__frame { animation: shot-swap .34s var(--ease); }
+  @keyframes shot-swap {
+    from { opacity: .35; transform: translateY(5px); }
+    to   { opacity: 1;   transform: none; }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   14c. Dessert gallery
+   -------------------------------------------------------------------------- */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 1rem;
+}
+.gallery__item {
+  margin: 0;
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--soot);
+  border: 1px solid rgba(26,19,16,.1);
+  transition: transform .28s var(--ease), border-color .28s var(--ease);
+}
+.gallery__item:hover { transform: translateY(-4px); border-color: var(--ember-deep); }
+.gallery__item img {
+  width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;
+}
+.gallery__item figcaption {
+  font-family: var(--ticket); font-size: 0.64rem;
+  text-transform: uppercase; letter-spacing: 0.11em;
+  padding: 0.7rem 0.75rem 0.8rem;
+  color: var(--ink); background: #fff;
+  line-height: 1.4;
+}
+.band--cream .gallery__item { border-color: rgba(26,19,16,.12); }
+
+/* A wide photograph used to break up a run of text. */
+.figure-wide { margin: 0; }
+.figure-wide img { width: 100%; border-radius: var(--r-lg); display: block; }
+.figure-wide figcaption {
+  font-family: var(--ticket); font-size: 0.64rem;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--smoke-dim); margin-top: 0.7rem;
+}
+.band--cream .figure-wide figcaption { color: #6b5a4e; }
+
+/* --------------------------------------------------------------------------
    15. Forms
    -------------------------------------------------------------------------- */
 .form { display: grid; gap: 1.15rem; }
