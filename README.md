@@ -144,12 +144,14 @@ interest and a written summary.
 
 **Pressing it again always refreshes the form.** Change the cookout, press
 it a second time, and every field it owns is rewritten. The written summary
-in the message box starts with a `MY COOKOUT BUILD` heading and ends on its
-`Estimate shown:` line, with a blank line between it and anything the
-visitor wrote. That blank line is how the block is found and replaced —
-the build itself never contains one — so there is no closing marker to
-look at. Two earlier shapes are still recognised and cleaned up, so anyone
-carrying an old summary in their form gets it replaced rather than stacked.
+in the message box runs from a `MY COOKOUT BUILD` heading to a line holding
+nothing but `---`. That pair is how the block is found and replaced on each
+press. The closing rule is matched as a whole line, so a stray `---` inside
+a sentence is not mistaken for the end. If it has been deleted the blank
+line before the visitor's own text is used instead, and failing that the
+`Estimate shown:` line — so their notes are never eaten. Two earlier shapes
+are still recognised and cleaned up, so anyone carrying an old summary in
+their form gets it replaced rather than stacked.
 Fields the builder rewrote are
 outlined in ember for a moment, so a repeat press visibly does something
 even when the form is already on screen. Name, phone, email, date and
@@ -216,12 +218,12 @@ They must **never** be served `immutable`. That tells a browser not even
 to ask again, and with stable filenames a fix can then never reach anyone
 who has already visited.
 
-Asset URLs in the HTML carry `?v=3`. If you change a stylesheet or script
+Asset URLs in the HTML carry `?v=4`. If you change a stylesheet or script
 and want it to land instantly for everyone — including anyone holding a
 stale copy — bump that number everywhere it appears:
 
 ```
-grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=3/?v=4/g'
+grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=4/?v=5/g'
 ```
 
 The `og:image` and schema URLs deliberately have no version, so social

@@ -498,6 +498,7 @@
        ------------------------------------------------------------------ */
 
     var BUILD_HEADER = 'MY COOKOUT BUILD';
+    var BUILD_FOOT = '---';
     var handedOff = false;
 
     function buildSummary(result) {
@@ -510,38 +511,50 @@
           }).join(' + ');
         }).join('\n') + '\n' +
         'Estimate shown: ' + money(roundTo(result.low, 25)) + ' \u2013 ' +
-        money(roundTo(result.high, 25));
+        money(roundTo(result.high, 25)) + '\n' + BUILD_FOOT;
     }
 
     /* Take out whatever build is already in the box so the new one
        replaces it rather than stacking on top.
 
-       There is no closing marker to look for, so the block runs from its
-       heading to the blank line that always separates it from anything
-       the visitor wrote. The build itself never contains a blank line.
+       The block runs from its heading to a line holding nothing but
+       three dashes. Matching a whole line rather than the characters
+       anywhere means a stray "---" inside a sentence is not mistaken
+       for the end.
 
-       Older shapes still have to be recognised, because anyone who used
-       the builder before now has one of them sitting in their form: the
-       fenced version with an explicit end marker, and the original
-       unmarked summary. */
+       Everything after that is a fallback for a block whose closing rule
+       has been deleted, and for the two shapes written before this
+       format existed — anyone who used the builder earlier still has one
+       of those sitting in their form. */
+    var END_RULE = /^[ \t]*---[ \t]*$/m;
     var OLD_HEADERS = ['--- My cookout build ---', 'Built with the cookout estimator:'];
     var OLD_END = '--- end of build ---';
     var TAIL = 'Estimate shown:';
 
     function blockEnd(text, from) {
-      var blank = text.indexOf('\n\n', from);
+      // Start looking below the heading, so a fenced old heading that
+      // itself contains dashes cannot match as the closing rule.
+      var headingEnd = text.indexOf('\n', from);
+      if (headingEnd === -1) return text.length;
+      var searchFrom = headingEnd + 1;
 
-      // A fenced old block ends at its marker, which sits before that blank line.
-      var fence = text.indexOf(OLD_END, from);
+      var rule = END_RULE.exec(text.slice(searchFrom));
+      if (rule) {
+        var lineEnd = text.indexOf('\n', searchFrom + rule.index);
+        return lineEnd === -1 ? text.length : lineEnd;
+      }
+
+      var blank = text.indexOf('\n\n', searchFrom);
+
+      var fence = text.indexOf(OLD_END, searchFrom);
       if (fence > -1 && (blank === -1 || fence < blank)) return fence + OLD_END.length;
 
       if (blank > -1) return blank;
 
-      // No blank line: stop after the last line the builder writes.
-      var tail = text.indexOf(TAIL, from);
+      var tail = text.indexOf(TAIL, searchFrom);
       if (tail > -1) {
-        var nl = text.indexOf('\n', tail);
-        return nl === -1 ? text.length : nl;
+        var t = text.indexOf('\n', tail);
+        return t === -1 ? text.length : t;
       }
       return text.length;
     }
