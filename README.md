@@ -142,6 +142,15 @@ denominated in pans. Then "Send this to Shon" fills the quote form below it
 with everything: guest count, event type, service style, budget range, menu
 interest and a written summary.
 
+**Pressing it again always refreshes the form.** Change the cookout, press
+it a second time, and every field it owns is rewritten. The written summary
+sits between two markers (`--- My cookout build ---` / `--- end of build ---`)
+inside the message box, so it can be replaced in place without touching
+anything the visitor typed around it. Fields the builder rewrote are
+outlined in ember for a moment, so a repeat press visibly does something
+even when the form is already on screen. Name, phone, email, date and
+location are never touched.
+
 ### How it prices
 
 All the numbers come from Stadium 1's real catering list. The estimator:

@@ -283,6 +283,8 @@
     var root = document.querySelector('[data-cookout]');
     if (!root) return;
 
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     var state = {
       guests: CONFIG.guests.start,
       meats: ['ribs', 'pulled-pork'],
@@ -356,6 +358,7 @@
           '</div>' +
           '<div class="ticket__foot">' +
             '<button type="button" class="btn btn--fire" data-send>Send this to Shon</button>' +
+            '<p class="ticket__sent" data-send-status role="status" aria-live="polite"></p>' +
             '<p class="ticket__legal">Estimate only &middot; Shon confirms every quote</p>' +
           '</div>' +
         '</div>' +
@@ -386,6 +389,7 @@
     var elPans    = root.querySelector('[data-pans]');
     var elEmpty   = root.querySelector('[data-empty]');
     var elSend    = root.querySelector('[data-send]');
+    var elSendStatus = root.querySelector('[data-send-status]');
 
     chipGroup(elMeats,   MEATS,       { name: 'meat',    type: 'checkbox' });
     chipGroup(elSides,   SIDES,       { name: 'side',    type: 'checkbox' });
@@ -487,7 +491,39 @@
       }).join('');
     }
 
-    /* ---- hand the build to the quote form ---- */
+    /* ---- hand the build to the quote form ----------------------------
+       Every click rewrites the whole build, so changing the cookout and
+       pressing the button again always refreshes what the form says.
+       Anything typed by hand — name, phone, their own notes — is kept.
+       ------------------------------------------------------------------ */
+
+    var BUILD_START = '--- My cookout build ---';
+    var BUILD_END = '--- end of build ---';
+    var handedOff = false;
+
+    function buildSummary(result) {
+      return BUILD_START + '\n' +
+        state.guests + ' guests' + (state.eventType ? ' \u00b7 ' + state.eventType : '') + '\n' +
+        (state.service === 'full' ? 'Full Service' : 'Drop-off') + '\n' +
+        result.builds.map(function (b) {
+          return '\u2022 ' + b.item.name + ' \u2014 ' + b.lines.map(function (l) {
+            return l.qty + '\u00d7 ' + l.size.label;
+          }).join(' + ');
+        }).join('\n') + '\n' +
+        'Estimate shown: ' + money(roundTo(result.low, 25)) + ' \u2013 ' +
+        money(roundTo(result.high, 25)) + '\n' + BUILD_END;
+    }
+
+    /* Briefly outline a field so a repeat click visibly does something. */
+    var flashTimers = [];
+    function flash(field) {
+      if (!field) return;
+      field.classList.add('is-updated');
+      flashTimers.push(window.setTimeout(function () {
+        field.classList.remove('is-updated');
+      }, 1500));
+    }
+
     elSend.addEventListener('click', function () {
       var result = calculate(state);
       if (!result) return;
@@ -495,39 +531,70 @@
       var form = document.querySelector('[data-quote-form]');
       if (!form) return;
 
+      flashTimers.forEach(window.clearTimeout);
+      flashTimers = [];
+
       function set(name, value) {
         var f = form.querySelector('[name="' + name + '"]');
-        if (f) f.value = value;
+        if (!f) return;
+        f.value = value;
+        flash(f);
       }
 
+      var range = money(roundTo(result.low, 25)) + ' \u2013 ' + money(roundTo(result.high, 25));
+
       set('guests', state.guests);
-      if (state.eventType) set('event_type', state.eventType);
       set('service_style', state.service === 'full' ? 'Full Service' : 'Drop-off');
-      set('budget', money(roundTo(result.low, 25)) + ' – ' + money(roundTo(result.high, 25)));
+      set('budget', range);
+      set('menu_interest', result.builds.map(function (b) { return b.item.name; }).join(', '));
 
-      var menuNames = result.builds.map(function (b) { return b.item.name; }).join(', ');
-      set('menu_interest', menuNames);
+      /* Only overwrite the event type when the builder has one, so a
+         choice made directly in the form isn't wiped out. */
+      if (state.eventType) set('event_type', state.eventType);
 
-      var summary = form.querySelector('[name="message"]');
-      if (summary && !summary.value.trim()) {
-        summary.value =
-          'Built with the cookout estimator:\n' +
-          state.guests + ' guests' + (state.eventType ? ' · ' + state.eventType : '') + '\n' +
-          (state.service === 'full' ? 'Full Service' : 'Drop-off') + '\n' +
-          result.builds.map(function (b) {
-            return '• ' + b.item.name + ' — ' + b.lines.map(function (l) {
-              return l.qty + '× ' + l.size.label;
-            }).join(' + ');
-          }).join('\n') +
-          '\nEstimate shown: ' + money(roundTo(result.low, 25)) + ' – ' + money(roundTo(result.high, 25));
+      /* The summary is a managed block between two markers. Replace it
+         where it already exists, otherwise put it above whatever they
+         have written. Either way it is rewritten on every click. */
+      var notes = form.querySelector('[name="message"]');
+      if (notes) {
+        var summary = buildSummary(result);
+        var existing = notes.value;
+        var from = existing.indexOf(BUILD_START);
+        var to = existing.indexOf(BUILD_END);
+
+        if (from > -1 && to > from) {
+          notes.value = existing.slice(0, from) + summary + existing.slice(to + BUILD_END.length);
+        } else if (existing.trim()) {
+          notes.value = summary + '\n\n' + existing;
+        } else {
+          notes.value = summary;
+        }
+        flash(notes);
+      }
+
+      if (elSendStatus) {
+        elSendStatus.textContent = handedOff
+          ? 'Request below updated'
+          : 'Sent to the request below';
+        flashTimers.push(window.setTimeout(function () {
+          elSendStatus.textContent = '';
+        }, 4000));
       }
 
       var target = document.getElementById('quote');
       if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        var first = form.querySelector('input:not([type="hidden"])');
-        window.setTimeout(function () { if (first) first.focus({ preventScroll: true }); }, 550);
+        target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+        /* Only take focus the first time, so a repeat click doesn't yank
+           the cursor out of a field they are part-way through typing. */
+        if (!handedOff) {
+          var first = form.querySelector('input:not([type="hidden"])');
+          window.setTimeout(function () {
+            if (first) first.focus({ preventScroll: true });
+          }, 550);
+        }
       }
+
+      handedOff = true;
     });
 
     /* ---- listeners ---- */
