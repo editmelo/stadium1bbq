@@ -872,7 +872,24 @@ input[type="range"]::-moz-range-thumb {
   text-transform: uppercase; letter-spacing: 0.16em;
   color: var(--smoke-dim); margin-bottom: 0.55rem;
 }
-.contact-card__v { font-size: 1.05rem; color: var(--cream); font-weight: 500; word-break: break-word; }
+.contact-card__v { font-size: 1.05rem; color: var(--cream); font-weight: 500; }
+
+/* The address is 27 characters. Shrink it a little on narrow screens
+   rather than let it wrap onto a second line. */
+.contact-card__v--email {
+  font-size: clamp(0.88rem, 3.1vw, 1.05rem);
+  white-space: nowrap;
+}
+
+.contact-card__note {
+  font-size: 0.8rem;
+  color: var(--smoke);
+  margin: 0.35rem 0 0;
+}
+
+/* One card per row, for a short list where each one is a distinct
+   way to get in touch rather than a set of equals. */
+.contacts--stack { grid-template-columns: 1fr; }
 
 /* --------------------------------------------------------------------------
    17. Footer
