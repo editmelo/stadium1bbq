@@ -218,12 +218,12 @@ They must **never** be served `immutable`. That tells a browser not even
 to ask again, and with stable filenames a fix can then never reach anyone
 who has already visited.
 
-Asset URLs in the HTML carry `?v=5`. If you change a stylesheet or script
+Asset URLs in the HTML carry `?v=6`. If you change a stylesheet or script
 and want it to land instantly for everyone — including anyone holding a
 stale copy — bump that number everywhere it appears:
 
 ```
-grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=5/?v=6/g'
+grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=6/?v=7/g'
 ```
 
 The `og:image` and schema URLs deliberately have no version, so social

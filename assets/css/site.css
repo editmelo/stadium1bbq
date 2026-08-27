@@ -881,12 +881,6 @@ input[type="range"]::-moz-range-thumb {
   white-space: nowrap;
 }
 
-.contact-card__note {
-  font-size: 0.8rem;
-  color: var(--smoke);
-  margin: 0.35rem 0 0;
-}
-
 /* One card per row, for a short list where each one is a distinct
    way to get in touch rather than a set of equals. */
 .contacts--stack { grid-template-columns: 1fr; }
