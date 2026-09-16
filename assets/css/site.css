@@ -640,6 +640,25 @@ input[type="range"]::-moz-range-thumb {
 .chip input:focus-visible + span { outline: 3px solid var(--gold); outline-offset: 3px; }
 .chip input:disabled + span { opacity: 0.35; cursor: not-allowed; }
 
+/* A long list of choices, broken up under small headings. */
+.chips__group {
+  flex-basis: 100%;
+  font-family: var(--ticket); font-size: 0.62rem;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--smoke-dim);
+  margin: 0.6rem 0 -0.1rem;
+}
+.chips__group:first-child { margin-top: 0; }
+.chips--extra { margin-top: 0.75rem; }
+
+/* Service lines in the ticket: priced like pans, no pan drawing. */
+.pan--extra .pan__qty { grid-column: 1 / -1; }
+.pan--extra:first-of-type,
+.pan:not(.pan--extra) + .pan--extra {
+  border-top: 1px dashed rgba(247,239,226,.16);
+  padding-top: 0.85rem;
+}
+
 /* ---- The pan build (the signature moment) ---- */
 .ticket {
   position: sticky; top: 96px;
@@ -878,6 +897,28 @@ tr[data-shot]:focus-visible { outline: 3px solid var(--gold); outline-offset: -3
     to   { opacity: 1;   transform: none; }
   }
 }
+
+/* Several short price lists side by side. */
+.menu-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2.5rem, 5vw, 3.5rem) clamp(2rem, 4vw, 3.5rem);
+  align-items: start;
+}
+/* Two flowing columns, so a short list tucks under a long one instead of
+   leaving a gap the height of its neighbor. */
+@media (min-width: 900px) {
+  .menu-columns {
+    display: block;
+    column-count: 2;
+    column-gap: clamp(2rem, 4vw, 3.5rem);
+  }
+  .menu-columns .menu-group {
+    break-inside: avoid;
+    margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+  }
+}
+.menu-columns .menu-group + .menu-group { margin-top: 0; }
 
 /* --------------------------------------------------------------------------
    14c. Dessert gallery

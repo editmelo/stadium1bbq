@@ -6,8 +6,8 @@
    ----------------------
    Every number below comes from Stadium 1's real catering price list
    (pan pricing). The estimator works out how many pans an event needs,
-   prices those pans, adds a service percentage, applies the event
-   minimum, and shows a range.
+   prices those pans, adds plates and servers at Shon's rates, applies
+   the event minimum, and shows a range that covers delivery.
 
    TO CHANGE PRICES: edit CONFIG and MENU below. Nothing else needs to move.
    ========================================================================== */
@@ -20,13 +20,14 @@
      ------------------------------------------------------------------ */
   var CONFIG = {
     // Smallest total you'll take for a catered event.
+    // NOT in the catering list — inferred from the packet. Confirm with Shon.
     minimumEvent: 800,
 
-    // Added to the food subtotal to cover setup, serving and disposables.
-    serviceRate: {
-      dropoff: 0.10,   // you drop it off hot, they serve themselves
-      full:    0.22    // you set up, serve and clean up
-    },
+    // Service costs, from Shon's catering list.
+    serverFee: 25,             // per server, full service only
+    guestsPerServer: 50,       // ASSUMPTION — one server per 50 guests. Confirm with Shon.
+    plates: { price: 49.99, guests: 25 },   // Plates & Utensils Pack, 25 settings
+    delivery: { low: 25, high: 200 },    // delivery fee tiers, by distance
 
     // How wide the quoted range is around the calculated figure (±).
     rangeSpread: 0.12,
@@ -48,85 +49,246 @@
   };
 
   /* ------------------------------------------------------------------
-     MENU — real prices from the Stadium 1 catering list.
-     `serves` is how many people one of that size feeds.
-     Sizes must be listed largest first.
+     MENU — Shon's catering prices, from her Square catalog (Sept 2026).
+     `serves` is how many people one of that size feeds. Sizes are
+     listed largest first. Brisket's 16 lb size is two 8 lb, so the
+     builder uses 8/4/2 and the menu page shows all four.
+
+     These must match menu/index.html. Both are generated from the same
+     price list — change a price in one, change it in the other.
      ------------------------------------------------------------------ */
   var MEATS = [
-    { id: 'ribs', name: 'Ribs', confirmed: true, sizes: [
-      { label: 'Full Pan', short: 'FULL', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  short: '1/2',  price: 99.99,  serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  short: '1/3',  price: 49.99,  serves: 8,  unit: 'third' }
+    { id: 'ribs', name: 'Ribs', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 259.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 139.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 79.99, serves: 8, unit: 'third' }
     ]},
-    { id: 'rib-tips', name: 'Rib Tips', confirmed: true, sizes: [
-      { label: 'Full Pan', short: 'FULL', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  short: '1/2',  price: 119.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  short: '1/3',  price: 59.99,  serves: 8,  unit: 'third' }
+    { id: 'st-louis-ribs', name: 'St. Louis Style Ribs', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 199.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 99.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 49.99, serves: 8, unit: 'third' }
     ]},
-    { id: 'brisket', name: 'Brisket', confirmed: true, sizes: [
-      { label: '8 lbs', short: '8LB', price: 350.99, serves: 24, unit: 'lb' },
-      { label: '4 lbs', short: '4LB', price: 175.99, serves: 12, unit: 'lb' },
-      { label: '2 lbs', short: '2LB', price: 85.99,  serves: 6,  unit: 'lb' }
+    { id: 'rib-tips', name: 'Rib Tips', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 219.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 129.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 69.99, serves: 8, unit: 'third' }
     ]},
-    { id: 'pulled-pork', name: 'Pulled Pork', confirmed: true, sizes: [
-      { label: 'Full Pan', short: 'FULL', price: 159.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  short: '1/2',  price: 79.99,  serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  short: '1/3',  price: 39.99,  serves: 8,  unit: 'third' }
+    { id: 'brisket', name: 'Brisket', group: 'Smoked & grilled', sizes: [
+      { label: '8 lbs', price: 399.99, serves: 24, unit: 'lb' },
+      { label: '4 lbs', price: 199.99, serves: 12, unit: 'lb' },
+      { label: '2 lbs', price: 99.99, serves: 6, unit: 'lb' }
     ]},
-    { id: 'pulled-beef', name: 'Pulled Beef', confirmed: true, sizes: [
-      { label: 'Full Pan', short: 'FULL', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  short: '1/2',  price: 99.99,  serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  short: '1/3',  price: 49.99,  serves: 8,  unit: 'third' }
+    { id: 'pulled-pork', name: 'Pulled Pork', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
     ]},
-    { id: 'pulled-chicken', name: 'Pulled Chicken', confirmed: true, sizes: [
-      { label: 'Full Pan', short: 'FULL', price: 159.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  short: '1/2',  price: 79.99,  serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  short: '1/3',  price: 39.99,  serves: 8,  unit: 'third' }
+    { id: 'pulled-chicken', name: 'Pulled Chicken', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
     ]},
-    { id: 'bbq-chicken', name: 'BBQ Chicken', confirmed: true, sizes: [
-      { label: 'Full Pan', short: 'FULL', price: 170.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  short: '1/2',  price: 85.99,  serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  short: '1/3',  price: 45.99,  serves: 8,  unit: 'third' }
+    { id: 'chicken-chunks', name: 'Grilled Chicken Chunks', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 209.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 129.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
     ]},
-    { id: 'baked-chicken', name: 'Baked Chicken', confirmed: true, sizes: [
-      { label: '100 Pieces', short: '100PC', price: 159.99, serves: 50, unit: 'pc' },
-      { label: '50 Pieces',  short: '50PC',  price: 79.99,  serves: 25, unit: 'pc' },
-      { label: '25 Pieces',  short: '25PC',  price: 35.99,  serves: 12, unit: 'pc' }
+    { id: 'beef-bites', name: 'Beef Bites', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 219.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
     ]},
-    { id: 'fried-chicken', name: 'Fried Chicken', confirmed: true, sizes: [
-      { label: '100 Pieces', short: '100PC', price: 159.99, serves: 50, unit: 'pc' },
-      { label: '50 Pieces',  short: '50PC',  price: 79.99,  serves: 25, unit: 'pc' },
-      { label: '25 Pieces',  short: '25PC',  price: 35.99,  serves: 12, unit: 'pc' }
+    { id: 'steak-bites', name: 'Steak Bites', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 49.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'smoked-turkey', name: 'Smoked Turkey', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 299.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 199.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'smoked-sausage', name: 'Smoked Sausage', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 129.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 65.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 25.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'turkey-bites', name: 'Turkey Bites', group: 'Smoked & grilled', sizes: [
+      { label: 'Full Pan', price: 129.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 65.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 29.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'chicken', name: 'Chicken', group: 'Comfort mains', sizes: [
+      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' }
+    ]},
+    { id: 'pork-chops', name: 'Pork Chops', group: 'Comfort mains', sizes: [
+      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'chicken-dressing', name: 'Chicken & Dressing', group: 'Comfort mains', sizes: [
+      { label: 'Full Pan', price: 229.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 129.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 69.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'meatloaf', name: 'Meatloaf', group: 'Comfort mains', sizes: [
+      { label: 'Full Pan', price: 199.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 99.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'spaghetti', name: 'Spaghetti', group: 'Comfort mains', sizes: [
+      { label: 'Full Pan', price: 199.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 69.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'meatballs', name: 'Meatballs', group: 'Comfort mains', sizes: [
+      { label: 'Full Pan', price: 129.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 69.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 49.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'white-chili', name: 'White Chicken Chili', group: 'Comfort mains', sizes: [
+      { label: 'Full Pan', price: 199.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 99.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 49.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'plant-chicken', name: 'Plant-Based Chicken', group: 'Comfort mains', sizes: [
+      { label: 'Full Pan', price: 199.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 99.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'catfish', name: 'Catfish', group: 'Seafood', sizes: [
+      { label: 'Full Pan', price: 239.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 119.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 69.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'perch', name: 'Perch', group: 'Seafood', sizes: [
+      { label: 'Full Pan', price: 239.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 119.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 69.99, serves: 8, unit: 'third' }
+    ]},
+    { id: 'cod', name: 'Cod', group: 'Seafood', sizes: [
+      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
     ]}
   ];
 
   var SIDES = [
-    // Confirmed pan pricing from the catering list.
-    { id: 'mac', name: 'Mac & Cheese', confirmed: true, sizes: [
-      { label: 'Full Pan', short: 'FULL', price: 159.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  short: '1/2',  price: 79.99,  serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  short: '1/3',  price: 39.99,  serves: 10, unit: 'third' }
+    { id: 'mac', name: 'Mac & Cheese', group: 'Mac & potatoes', sizes: [
+      { label: 'Full Pan', price: 220.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 69.99, serves: 10, unit: 'third' }
     ]},
-    /* --------------------------------------------------------------
-       The three sides below are ESTIMATED. Stadium 1 sells them by
-       the portion at the market ($4 each) but has no published pan
-       price. These follow the same pan structure as Mac & Cheese.
-       ACTION: confirm these three with Shon and set `confirmed: true`.
-       -------------------------------------------------------------- */
-    { id: 'beans', name: 'Baked Beans', confirmed: false, sizes: [
-      { label: 'Full Pan', short: 'FULL', price: 99.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  short: '1/2',  price: 49.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  short: '1/3',  price: 29.99, serves: 10, unit: 'third' }
+    { id: 'vegan-mac', name: 'Vegan Mac & Cheese', group: 'Mac & potatoes', sizes: [
+      { label: 'Full Pan', price: 210.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 10, unit: 'third' }
     ]},
-    { id: 'slaw', name: 'Cole Slaw', confirmed: false, sizes: [
-      { label: 'Full Pan', short: 'FULL', price: 99.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  short: '1/2',  price: 49.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  short: '1/3',  price: 29.99, serves: 10, unit: 'third' }
+    { id: 'mashed', name: 'Mashed Potatoes', group: 'Mac & potatoes', sizes: [
+      { label: 'Full Pan', price: 109.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 59.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
     ]},
-    { id: 'green-beans', name: 'Green Beans', confirmed: false, sizes: [
-      { label: 'Full Pan', short: 'FULL', price: 99.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  short: '1/2',  price: 49.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  short: '1/3',  price: 29.99, serves: 10, unit: 'third' }
+    { id: 'potato-salad', name: 'Potato Salad', group: 'Mac & potatoes', sizes: [
+      { label: 'Full Pan', price: 199.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 99.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'vegan-potato', name: 'Vegan Potato Salad', group: 'Mac & potatoes', sizes: [
+      { label: 'Full Pan', price: 159.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 79.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'yams', name: 'Candied Yams', group: 'Mac & potatoes', sizes: [
+      { label: 'Full Pan', price: 109.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 69.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 45.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'sweet-potatoes', name: 'Sweet Potatoes', group: 'Mac & potatoes', sizes: [
+      { label: 'Full Pan', price: 159.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 79.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'beans', name: 'Baked Beans', group: 'Beans & greens', sizes: [
+      { label: 'Full Pan', price: 99.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 49.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 25.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'green-beans', name: 'Green Beans', group: 'Beans & greens', sizes: [
+      { label: 'Full Pan', price: 129.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 69.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'smothered-beans', name: 'Smothered Green Beans', group: 'Beans & greens', sizes: [
+      { label: 'Full Pan', price: 159.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 79.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'vegan-beans', name: 'Vegan Green Beans', group: 'Beans & greens', sizes: [
+      { label: 'Full Pan', price: 119.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 59.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'greens', name: 'Greens', group: 'Beans & greens', sizes: [
+      { label: 'Full Pan', price: 199.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 99.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'cabbage', name: 'Cabbage', group: 'Beans & greens', sizes: [
+      { label: 'Full Pan', price: 99.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 69.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'dirty-cabbage', name: 'Dirty Cabbage', group: 'Beans & greens', sizes: [
+      { label: 'Full Pan', price: 199.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 99.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'corn', name: 'Corn on the Cob', group: 'Beans & greens', sizes: [
+      { label: 'Full Pan', price: 109.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 59.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 35.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'mixed-veg', name: 'Mixed Vegetables', group: 'Beans & greens', sizes: [
+      { label: 'Full Pan', price: 109.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 59.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'smoked-rice', name: 'Smoked Rice', group: 'Rice, salads & bread', sizes: [
+      { label: 'Full Pan', price: 119.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 69.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'dirty-rice', name: 'Dirty Rice', group: 'Rice, salads & bread', sizes: [
+      { label: 'Full Pan', price: 199.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 99.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'slaw', name: 'Cole Slaw', group: 'Rice, salads & bread', sizes: [
+      { label: 'Full Pan', price: 109.0, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 69.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'garden-salad', name: 'Garden Salad', group: 'Rice, salads & bread', sizes: [
+      { label: 'Full Pan', price: 99.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 49.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 25.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'fruit', name: 'Fruit', group: 'Rice, salads & bread', sizes: [
+      { label: 'Full Pan', price: 99.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 49.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 25.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'deviled-eggs', name: 'Deviled Eggs', group: 'Rice, salads & bread', sizes: [
+      { label: 'Full Pan', price: 89.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 49.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 29.99, serves: 10, unit: 'third' }
+    ]},
+    { id: 'cornbread', name: 'Cornbread', group: 'Rice, salads & bread', sizes: [
+      { label: 'Full Pan', price: 159.99, serves: 30, unit: 'full' },
+      { label: '1/2 Pan',  price: 109.99, serves: 15, unit: 'half' },
+      { label: '1/3 Pan',  price: 59.99, serves: 10, unit: 'third' }
     ]}
   ];
 
@@ -240,28 +402,39 @@
     }
 
     var food = builds.reduce(function (sum, b) { return sum + b.total; }, 0);
-    var rate = CONFIG.serviceRate[state.service] || 0;
-    var withService = food * (1 + rate);
 
-    var belowMinimum = withService < CONFIG.minimumEvent;
-    var mid = Math.max(withService, CONFIG.minimumEvent);
+    // Service, priced the way Shon charges it rather than as a percentage.
+    var extras = [];
+    if (state.plates) {
+      var packs = Math.ceil(state.guests / CONFIG.plates.guests);
+      extras.push({ name: 'Plates & Utensils', detail: packs + '\u00d7 25-guest pack',
+                    total: Math.round(packs * CONFIG.plates.price) });
+    }
+    if (state.service === 'full') {
+      var servers = Math.max(1, Math.ceil(state.guests / CONFIG.guestsPerServer));
+      extras.push({ name: 'Servers', detail: servers + '\u00d7 server',
+                    total: servers * CONFIG.serverFee });
+    }
+    var extrasTotal = extras.reduce(function (sum, e) { return sum + e.total; }, 0);
+    var base = food + extrasTotal;
 
-    // The bottom of the range never dips under the minimum — otherwise
-    // an event that grows past the minimum would appear to get cheaper.
-    var low = Math.max(CONFIG.minimumEvent, mid * (1 - CONFIG.rangeSpread));
-    var high = Math.max(low, mid * (1 + CONFIG.rangeSpread));
+    var belowMinimum = base < CONFIG.minimumEvent;
+    var mid = Math.max(base, CONFIG.minimumEvent);
 
-    var unconfirmed = builds.some(function (b) { return b.item.confirmed === false; });
+    // Delivery runs from the lowest fee to the highest, so it widens the
+    // range rather than being guessed. The bottom never dips under the
+    // minimum, so a growing event can never look cheaper.
+    var low = Math.max(CONFIG.minimumEvent, base * (1 - CONFIG.rangeSpread) + CONFIG.delivery.low);
+    var high = Math.max(low, mid * (1 + CONFIG.rangeSpread) + CONFIG.delivery.high);
 
     return {
       builds: builds,
+      extras: extras,
       food: food,
-      serviceRate: rate,
       low: low,
       high: high,
       perGuest: mid / state.guests,
-      belowMinimum: belowMinimum,
-      unconfirmed: unconfirmed
+      belowMinimum: belowMinimum
     };
   }
 
@@ -290,6 +463,7 @@
       meats: ['ribs', 'pulled-pork'],
       sides: ['mac', 'beans'],
       service: 'dropoff',
+      plates: true,
       eventType: ''
     };
 
@@ -340,6 +514,12 @@
           '<div class="field">' +
             '<div class="field__label"><h3>How should we serve it?</h3></div>' +
             '<div class="chips" data-service></div>' +
+            '<div class="chips chips--extra">' +
+              '<label class="chip">' +
+                '<input type="checkbox" id="ck-plates" data-plates checked>' +
+                '<span>Add plates &amp; utensils</span>' +
+              '</label>' +
+            '</div>' +
           '</div>' +
 
         '</div>' +
@@ -365,14 +545,24 @@
       '</div>';
 
     /* ---- chip builders ---- */
+    function esc(t) {
+      return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    }
+
     function chipGroup(host, items, opts) {
+      var lastGroup = null;
       host.innerHTML = items.map(function (it) {
         var id = opts.name + '-' + (it.id || it.replace(/\W+/g, '-').toLowerCase());
         var val = it.id || it;
         var label = it.name || it;
-        return '<label class="chip">' +
+        var heading = '';
+        if (it.group && it.group !== lastGroup) {
+          heading = '<p class="chips__group">' + esc(it.group) + '</p>';
+          lastGroup = it.group;
+        }
+        return heading + '<label class="chip">' +
           '<input type="' + opts.type + '" name="' + opts.name + '" id="' + id + '" value="' + val + '">' +
-          '<span>' + label + '</span>' +
+          '<span>' + esc(label) + '</span>' +
         '</label>';
       }).join('');
     }
@@ -390,6 +580,7 @@
     var elEmpty   = root.querySelector('[data-empty]');
     var elSend    = root.querySelector('[data-send]');
     var elSendStatus = root.querySelector('[data-send-status]');
+    var elPlates  = root.querySelector('[data-plates]');
 
     chipGroup(elMeats,   MEATS,       { name: 'meat',    type: 'checkbox' });
     chipGroup(elSides,   SIDES,       { name: 'side',    type: 'checkbox' });
@@ -427,6 +618,7 @@
       state.sides  = readChecked(elSides, 'side');
       state.service = (readChecked(elService, 'service')[0]) || 'dropoff';
       state.eventType = (readChecked(elEvents, 'event')[0]) || '';
+      state.plates = elPlates.checked;
 
       enforceCap(elMeats, 'meat', CONFIG.maxMeats);
       enforceCap(elSides, 'side', CONFIG.maxSides);
@@ -463,10 +655,8 @@
       if (result.belowMinimum) {
         notes.push('This event is under our ' + money(CONFIG.minimumEvent) + ' catering minimum, so the minimum is what\'s shown.');
       }
-      if (result.serviceRate > 0) {
-        notes.push('Includes ' + Math.round(result.serviceRate * 100) + '% for ' +
-          (state.service === 'full' ? 'setup, serving and cleanup' : 'setup and disposables') + '.');
-      }
+      notes.push('Includes delivery, ' + money(CONFIG.delivery.low) + '\u2013' +
+        money(CONFIG.delivery.high) + ' depending on distance.');
       elNote.textContent = notes.join(' ');
 
       elPans.innerHTML = result.builds.map(function (b) {
@@ -483,10 +673,16 @@
         }).join(' + ');
 
         return '<li class="pan">' +
-          '<span class="pan__name">' + b.item.name + '</span>' +
+          '<span class="pan__name">' + esc(b.item.name) + '</span>' +
           '<span class="pan__price">' + money(b.total, 2) + '</span>' +
           '<span class="pan__vis">' + units + '<span class="pan__spacer"></span>' +
             '<span class="pan__qty">' + qtyText + '</span></span>' +
+        '</li>';
+      }).join('') + result.extras.map(function (e) {
+        return '<li class="pan pan--extra">' +
+          '<span class="pan__name">' + esc(e.name) + '</span>' +
+          '<span class="pan__price">' + money(e.total, 2) + '</span>' +
+          '<span class="pan__qty">' + esc(e.detail) + '</span>' +
         '</li>';
       }).join('');
     }
@@ -510,6 +706,9 @@
             return l.qty + '\u00d7 ' + l.size.label;
           }).join(' + ');
         }).join('\n') + '\n' +
+        result.extras.map(function (e) {
+          return '\u2022 ' + e.name + ' \u2014 ' + e.detail;
+        }).join('\n') + (result.extras.length ? '\n' : '') +
         'Estimate shown: ' + money(roundTo(result.low, 25)) + ' \u2013 ' +
         money(roundTo(result.high, 25)) + '\n' + BUILD_FOOT;
     }
@@ -648,6 +847,7 @@
     [elMeats, elSides, elService, elEvents].forEach(function (host) {
       host.addEventListener('change', sync);
     });
+    elPlates.addEventListener('change', sync);
 
     sync();
   }

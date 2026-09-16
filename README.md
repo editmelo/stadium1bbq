@@ -64,18 +64,36 @@ Removing `data-no-endpoint` is what switches off the "not connected" message —
 the handler in `assets/js/site.js` only binds to forms that have that
 attribute. Then delete that block in `site.js` once both forms are live.
 
-### 2. Confirm three side prices with Shon
+### 2. Pricing — from Shon's catering list, a few things to confirm
 
-The catering price list has pan pricing for **Mac & Cheese** only. Baked
-Beans, Cole Slaw and Green Beans are sold at $4 a portion at the market but
-have no published pan price, so the builder uses an **estimate** for them.
+Every catering price on the site now comes from **Catering for Website.xlsx**,
+Shon's Square catalog export (September 2026). Pop-up prices come from
+**Current Menu for Pop Up Events.png**. All 118 catering prices were checked
+against the spreadsheet by script, not by eye.
 
-They're flagged in `assets/js/estimator.js` with `confirmed: false`. Get the
-real numbers from Shon, update the prices, and set `confirmed: true`.
+The export is a full Square catalog, so it mixes catering pans with
+single servings sold at past events. Only the catering listings are used.
+A few things in it needed a judgment call — worth a quick yes/no from Shon:
 
-Also worth confirming: the **$800 event minimum** and the **service
-percentages** (10% drop-off / 22% full service). Both are reasonable
-inferences from the packet, not numbers Shon gave directly.
+- **Two rib listings.** "Pan Ribs" ($79.99 / $139.99 / $259.99) and
+  "St. Louis Style Ribs" ($49.99 / $99.99 / $199.99) are both in the catalog.
+  Both are on the site as separate items. If one is retired, delete it from
+  the menu page and from `MEATS` in `assets/js/estimator.js`.
+- **Steak Bites** appears twice: $49.99 / $109.99 / $210.99 in the Catering
+  category (used), and $75.99 / $149.99 / $299.99 uncategorized.
+- **Servers are $25 each** in the catalog, but nothing says how many an event
+  needs. The builder assumes **one server per 50 guests** — see
+  `guestsPerServer` in `CONFIG`.
+- **The $800 event minimum** is still an inference from the packet, not
+  something in the catalog.
+- **"Your Choice — $15"** is on the pop-up flyer with no description, so it's
+  listed exactly that way.
+- Left off as probable duplicates: "Veggie Pan Mixed" (vs Mixed Vegetables)
+  and plain "Oreo Chocolate Mousse" (vs the Mousse Cake). Pulled Beef and
+  piece-priced baked/fried chicken are gone — they're not in the catalog.
+
+Typos in the Square names are corrected on the site ("Candid Yams" →
+Candied Yams, "Gnache" → Ganache). Worth fixing in Square too.
 
 ### 3. Phone number
 
@@ -103,46 +121,6 @@ so skipping that step leaves photos on their side.
 
 **Still worth shooting:** Shon at the pit, a catering table before anyone
 eats, and a wide shot of a repast or corporate spread.
-
----|---|
-| `rib-tips.jpg` | Home hero, and the Find Us closing block |
-| `mac-and-cheese.jpg` | Home — the word-of-mouth section |
-| `trifle.jpg` | Menu desserts, and the About story |
-
-Everywhere else that would have held a stock photo uses a **photo-free
-treatment instead**: char ground, an ember glow, and charcoal grate lines
-rising out of the bottom. It's used on the Catering and Find Us heroes, both
-home-page doors, and every dish card. It reads as a deliberate design
-decision rather than a gap, and it means nothing on the site misrepresents
-the food.
-
-**Adding real photos is still the biggest single upgrade available.** Shot
-list, in priority order — all of it doable on a phone in daylight at one
-event:
-
-1. A full pan of ribs, straight down, filling the frame
-2. Wings coming off the grill with flame visible
-3. Shon at the smoker — a real face sells a one-woman operation better than food does
-4. A catering table set up at an actual event, before anyone eats
-5. A mac & cheese bowl with meat on top, the market version
-6. Sliders, three on a board
-7. A repast or corporate spread, wide, showing scale
-8. The market stall with signage
-
-To use a new photo, drop it in `assets/img/` and swap the photo-free
-treatment for an image. On a hero, replace `class="hero hero--type"` with
-`class="hero hero--bright"` and add the media block back:
-
-```html
-<section class="hero hero--bright">
-  <div class="hero__media">
-    <img src="/assets/img/your-photo.jpg" alt="" fetchpriority="high">
-  </div>
-  ...
-```
-
-On a dish card, add `<div class="dish__img"><img src="…" alt="…"
-loading="lazy"></div>` as the first child of the `<article class="dish">`.
 
 ---
 
@@ -195,7 +173,7 @@ location are never touched.
 
 ### How it prices
 
-All the numbers come from Stadium 1's real catering list. The estimator:
+Every number comes from Stadium 1's catering list. The estimator:
 
 1. Works out meat servings needed — one per guest, plus a bit for each extra
    meat, since people sample instead of picking one
@@ -203,36 +181,50 @@ All the numbers come from Stadium 1's real catering list. The estimator:
 3. Finds the cheapest set of pans covering that, shaped the way a caterer
    actually loads a van (full pans for the bulk, at most one half and two
    thirds for the remainder)
-4. Adds the service percentage
+4. Adds **plates & utensils** at $49.99 per 25 guests (the visitor can untick
+   it), and on full service **servers** at $25 each
 5. Applies the event minimum
-6. Shows a range around the result
+6. Shows a range, with **delivery at $25–$200** folded in — the lowest fee
+   at the bottom, the highest at the top, since it depends on distance
 
-Sanity check against what Shon reported in the packet:
+Serving counts are assumptions, not from the catalog: a meat pan feeds about
+8 / 12 / 24 (third / half / full), a side pan about 10 / 15 / 30, brisket
+about 3 people a pound.
 
-| Event | Estimator says | Shon's stated range |
-|---|---|---|
-| 20 guests, 2 meats, 2 sides | $800 – $900 | $800 low end ✓ |
-| 150 guests, 3 meats, 2 sides | $2,050 – $2,600 | sweet spot 100–200 ✓ |
-| 350 guests, 2 meats, 2 sides | $4,625 – $5,900 | $5,000 high end ✓ |
+Examples at current prices, drop-off with plates:
+
+| Event | Estimate |
+|---|---|
+| 20 guests · ribs, pulled pork · mac, beans | $800 – $1,100 (minimum applies) |
+| 100 guests · ribs, pulled pork · mac, beans | $1,825 – $2,475 |
+| 150 guests, full service · tips, pulled chicken, chicken · mac, green beans | $2,825 – $3,775 |
+| 350 guests · ribs, pulled pork · mac, beans | $6,050 – $7,875 |
+
+The packet put Shon's high end around $5,000. At the new prices a 350-guest
+spread lands above that, which is expected — the packet predates them.
 
 ### Changing prices
 
-Everything lives in one `CONFIG` block and two arrays at the top of
-`assets/js/estimator.js`. Nothing else needs touching.
+Prices live in two places that must agree: the tables on `menu/index.html`
+and the `MEATS` / `SIDES` arrays in `assets/js/estimator.js`. The menu shows
+`.99` prices; the estimate rounds to whole dollars.
+
+Service costs sit in one `CONFIG` block at the top of the estimator:
 
 ```js
 var CONFIG = {
-  minimumEvent: 800,                          // smallest event you'll take
-  serviceRate: { dropoff: 0.10, full: 0.22 }, // added for setup/serving
-  rangeSpread: 0.12,                          // how wide the quoted range is
+  minimumEvent: 800,                         // NOT in the catalog — confirm
+  serverFee: 25,                             // per server, full service
+  guestsPerServer: 50,                       // ASSUMPTION — confirm
+  plates: { price: 49.99, guests: 25 },      // Plates & Utensils Pack
+  delivery: { low: 25, high: 200 },          // delivery fee tiers
+  rangeSpread: 0.12,                         // how wide the quoted range is
   guests: { min: 20, max: 400, step: 5, start: 150 },
   ...
 };
 ```
 
-If prices change on the menu page, change them here too — they're
-deliberately kept in both places so the menu can show `.99` prices while the
-estimate rounds to whole dollars.
+After changing an asset, bump the `?v=` number on every page (see Caching).
 
 ---
 
@@ -254,12 +246,12 @@ They must **never** be served `immutable`. That tells a browser not even
 to ask again, and with stable filenames a fix can then never reach anyone
 who has already visited.
 
-Asset URLs in the HTML carry `?v=8`. If you change a stylesheet or script
+Asset URLs in the HTML carry `?v=9`. If you change a stylesheet or script
 and want it to land instantly for everyone — including anyone holding a
 stale copy — bump that number everywhere it appears:
 
 ```
-grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=8/?v=9/g'
+grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=9/?v=10/g'
 ```
 
 The `og:image` and schema URLs deliberately have no version, so social
