@@ -19,9 +19,8 @@
      CONFIG — Shon, these are the only numbers you need to touch.
      ------------------------------------------------------------------ */
   var CONFIG = {
-    // Smallest total you'll take for a catered event.
-    // NOT in the catering list — inferred from the packet. Confirm with Shon.
-    minimumEvent: 800,
+    // Smallest event Shon will take, in guests.
+    minimumGuests: 25,
 
     // Service costs, from Shon's catering list.
     serverFee: 25,             // per server, full service only
@@ -33,7 +32,7 @@
     rangeSpread: 0.12,
 
     // Guest slider
-    guests: { min: 20, max: 400, step: 5, start: 150 },
+    guests: { min: 25, max: 400, step: 5, start: 150 },
 
     // How much meat to cook. One meat = one serving each. Every extra
     // meat adds a little, because people sample rather than pick one.
@@ -49,246 +48,124 @@
   };
 
   /* ------------------------------------------------------------------
-     MENU — Shon's catering prices, from her Square catalog (Sept 2026).
-     `serves` is how many people one of that size feeds. Sizes are
-     listed largest first. Brisket's 16 lb size is two 8 lb, so the
-     builder uses 8/4/2 and the menu page shows all four.
+     MENU — Shon's catering prices, October 2026.
 
-     These must match menu/index.html. Both are generated from the same
-     price list — change a price in one, change it in the other.
+     Source: the "Customer-Facing A La Carte Prices" sheet. Twenty-five
+     items, half pan and full pan only, and every full pan is exactly
+     twice the half. Her note with the sheet: "These will be the only
+     items that need to be on the site."
+
+     `serves` is how many people one pan feeds. That part is not on the
+     sheet — a half pan is taken as 12 for an entrée and 15 for a side,
+     and a 6 qt pot as 24 eight-ounce servings.
+
+     These must match menu/index.html. Both are generated from one
+     transcription of the sheet — change a price in one, change it in
+     the other.
      ------------------------------------------------------------------ */
   var MEATS = [
-    { id: 'ribs', name: 'Ribs', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 259.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 139.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 79.99, serves: 8, unit: 'third' }
+    { id: 'smoked-turkey', name: 'Smoked Turkey', group: 'Entrées', sizes: [
+      { label: 'Full Pan', price: 150.0, serves: 24, unit: 'full' },
+      { label: 'Half Pan', price: 75.0, serves: 12, unit: 'half' }
     ]},
-    { id: 'st-louis-ribs', name: 'St. Louis Style Ribs', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 99.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 49.99, serves: 8, unit: 'third' }
+    { id: 'pulled-pork', name: 'Pulled Pork', group: 'Entrées', sizes: [
+      { label: 'Full Pan', price: 160.0, serves: 24, unit: 'full' },
+      { label: 'Half Pan', price: 80.0, serves: 12, unit: 'half' }
     ]},
-    { id: 'rib-tips', name: 'Rib Tips', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 219.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 129.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 69.99, serves: 8, unit: 'third' }
+    { id: 'pulled-chicken', name: 'Pulled Chicken', group: 'Entrées', sizes: [
+      { label: 'Full Pan', price: 140.0, serves: 24, unit: 'full' },
+      { label: 'Half Pan', price: 70.0, serves: 12, unit: 'half' }
     ]},
-    { id: 'brisket', name: 'Brisket', group: 'Smoked & grilled', sizes: [
-      { label: '8 lbs', price: 399.99, serves: 24, unit: 'lb' },
-      { label: '4 lbs', price: 199.99, serves: 12, unit: 'lb' },
-      { label: '2 lbs', price: 99.99, serves: 6, unit: 'lb' }
+    { id: 'rib-tips', name: 'Rib Tips', group: 'Entrées', sizes: [
+      { label: 'Full Pan', price: 230.0, serves: 24, unit: 'full' },
+      { label: 'Half Pan', price: 115.0, serves: 12, unit: 'half' }
     ]},
-    { id: 'pulled-pork', name: 'Pulled Pork', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
+    { id: 'beef-bites', name: 'Beef Bites', group: 'Entrées', sizes: [
+      { label: 'Full Pan', price: 280.0, serves: 24, unit: 'full' },
+      { label: 'Half Pan', price: 140.0, serves: 12, unit: 'half' }
     ]},
-    { id: 'pulled-chicken', name: 'Pulled Chicken', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
+    { id: 'chicken-dressing', name: 'Chicken & Dressing', group: 'Entrées', sizes: [
+      { label: 'Full Pan', price: 300.0, serves: 24, unit: 'full' },
+      { label: 'Half Pan', price: 150.0, serves: 12, unit: 'half' }
     ]},
-    { id: 'chicken-chunks', name: 'Grilled Chicken Chunks', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 209.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 129.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
+    { id: 'wings', name: 'Wings', group: 'Entrées', sizes: [
+      { label: 'Full Pan', price: 250.0, serves: 24, unit: 'full' },
+      { label: 'Half Pan', price: 125.0, serves: 12, unit: 'half' }
     ]},
-    { id: 'beef-bites', name: 'Beef Bites', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 219.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
+    { id: 'brisket-chili', name: 'Brisket Chili', group: 'Fall & winter', sizes: [
+      { label: 'Full Pan', price: 360.0, serves: 48, unit: 'full' },
+      { label: 'Half Pan', price: 180.0, serves: 24, unit: 'half' }
     ]},
-    { id: 'steak-bites', name: 'Steak Bites', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 49.99, serves: 8, unit: 'third' }
+    { id: 'traditional-chili', name: 'Traditional Chili', group: 'Fall & winter', sizes: [
+      { label: 'Full Pan', price: 300.0, serves: 48, unit: 'full' },
+      { label: 'Half Pan', price: 150.0, serves: 24, unit: 'half' }
     ]},
-    { id: 'smoked-turkey', name: 'Smoked Turkey', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 299.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 199.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
+    { id: 'chicken-chowder', name: 'Chicken Corn Chowder', group: 'Fall & winter', sizes: [
+      { label: 'Full Pan', price: 250.0, serves: 48, unit: 'full' },
+      { label: 'Half Pan', price: 125.0, serves: 24, unit: 'half' }
     ]},
-    { id: 'smoked-sausage', name: 'Smoked Sausage', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 129.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 65.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 25.99, serves: 8, unit: 'third' }
+    { id: 'white-chili', name: 'White Chicken Chili', group: 'Fall & winter', sizes: [
+      { label: 'Full Pan', price: 250.0, serves: 48, unit: 'full' },
+      { label: 'Half Pan', price: 125.0, serves: 24, unit: 'half' }
     ]},
-    { id: 'turkey-bites', name: 'Turkey Bites', group: 'Smoked & grilled', sizes: [
-      { label: 'Full Pan', price: 129.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 65.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 29.99, serves: 8, unit: 'third' }
+    { id: 'corn-chowder', name: 'Corn Chowder', group: 'Fall & winter', sizes: [
+      { label: 'Full Pan', price: 210.0, serves: 48, unit: 'full' },
+      { label: 'Half Pan', price: 105.0, serves: 24, unit: 'half' }
     ]},
-    { id: 'chicken', name: 'Chicken', group: 'Comfort mains', sizes: [
-      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' }
-    ]},
-    { id: 'pork-chops', name: 'Pork Chops', group: 'Comfort mains', sizes: [
-      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
-    ]},
-    { id: 'chicken-dressing', name: 'Chicken & Dressing', group: 'Comfort mains', sizes: [
-      { label: 'Full Pan', price: 229.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 129.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 69.99, serves: 8, unit: 'third' }
-    ]},
-    { id: 'meatloaf', name: 'Meatloaf', group: 'Comfort mains', sizes: [
-      { label: 'Full Pan', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 99.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
-    ]},
-    { id: 'spaghetti', name: 'Spaghetti', group: 'Comfort mains', sizes: [
-      { label: 'Full Pan', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 69.99, serves: 8, unit: 'third' }
-    ]},
-    { id: 'meatballs', name: 'Meatballs', group: 'Comfort mains', sizes: [
-      { label: 'Full Pan', price: 129.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 69.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 49.99, serves: 8, unit: 'third' }
-    ]},
-    { id: 'white-chili', name: 'White Chicken Chili', group: 'Comfort mains', sizes: [
-      { label: 'Full Pan', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 99.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 49.99, serves: 8, unit: 'third' }
-    ]},
-    { id: 'plant-chicken', name: 'Plant-Based Chicken', group: 'Comfort mains', sizes: [
-      { label: 'Full Pan', price: 199.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 99.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
-    ]},
-    { id: 'catfish', name: 'Catfish', group: 'Seafood', sizes: [
-      { label: 'Full Pan', price: 239.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 119.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 69.99, serves: 8, unit: 'third' }
-    ]},
-    { id: 'perch', name: 'Perch', group: 'Seafood', sizes: [
-      { label: 'Full Pan', price: 239.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 119.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 69.99, serves: 8, unit: 'third' }
-    ]},
-    { id: 'cod', name: 'Cod', group: 'Seafood', sizes: [
-      { label: 'Full Pan', price: 210.99, serves: 24, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 12, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 8, unit: 'third' }
+    { id: 'jambalaya', name: 'Chicken Jambalaya', group: 'Fall & winter', sizes: [
+      { label: 'Full Pan', price: 290.0, serves: 48, unit: 'full' },
+      { label: 'Half Pan', price: 145.0, serves: 24, unit: 'half' }
     ]}
   ];
 
   var SIDES = [
-    { id: 'mac', name: 'Mac & Cheese', group: 'Mac & potatoes', sizes: [
-      { label: 'Full Pan', price: 220.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 69.99, serves: 10, unit: 'third' }
+    { id: 'mac', name: 'Mac & Cheese', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 200.0, serves: 30, unit: 'full' },
+      { label: 'Half Pan', price: 100.0, serves: 15, unit: 'half' }
     ]},
-    { id: 'vegan-mac', name: 'Vegan Mac & Cheese', group: 'Mac & potatoes', sizes: [
-      { label: 'Full Pan', price: 210.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 10, unit: 'third' }
+    { id: 'mashed', name: 'Mashed Potatoes', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 90.0, serves: 30, unit: 'full' },
+      { label: 'Half Pan', price: 45.0, serves: 15, unit: 'half' }
     ]},
-    { id: 'mashed', name: 'Mashed Potatoes', group: 'Mac & potatoes', sizes: [
-      { label: 'Full Pan', price: 109.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 59.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
+    { id: 'rice', name: 'Seasoned Rice', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 80.0, serves: 30, unit: 'full' },
+      { label: 'Half Pan', price: 40.0, serves: 15, unit: 'half' }
     ]},
-    { id: 'potato-salad', name: 'Potato Salad', group: 'Mac & potatoes', sizes: [
-      { label: 'Full Pan', price: 199.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 99.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 10, unit: 'third' }
+    { id: 'normandy', name: 'Normandy Vegetables', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 110.0, serves: 30, unit: 'full' },
+      { label: 'Half Pan', price: 55.0, serves: 15, unit: 'half' }
     ]},
-    { id: 'vegan-potato', name: 'Vegan Potato Salad', group: 'Mac & potatoes', sizes: [
-      { label: 'Full Pan', price: 159.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 79.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
+    { id: 'green-beans', name: 'Green Beans', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 120.0, serves: 30, unit: 'full' },
+      { label: 'Half Pan', price: 60.0, serves: 15, unit: 'half' }
     ]},
-    { id: 'yams', name: 'Candied Yams', group: 'Mac & potatoes', sizes: [
-      { label: 'Full Pan', price: 109.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 69.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 45.99, serves: 10, unit: 'third' }
+    { id: 'baked-beans', name: 'Baked Beans', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 130.0, serves: 30, unit: 'full' },
+      { label: 'Half Pan', price: 65.0, serves: 15, unit: 'half' }
     ]},
-    { id: 'sweet-potatoes', name: 'Sweet Potatoes', group: 'Mac & potatoes', sizes: [
-      { label: 'Full Pan', price: 159.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 79.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
+    { id: 'sweet-potatoes', name: 'Sweet Potatoes', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 140.0, serves: 30, unit: 'full' },
+      { label: 'Half Pan', price: 70.0, serves: 15, unit: 'half' }
     ]},
-    { id: 'beans', name: 'Baked Beans', group: 'Beans & greens', sizes: [
-      { label: 'Full Pan', price: 99.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 49.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 25.99, serves: 10, unit: 'third' }
+    { id: 'skillet-corn', name: 'Skillet Corn', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 170.0, serves: 30, unit: 'full' },
+      { label: 'Half Pan', price: 85.0, serves: 15, unit: 'half' }
     ]},
-    { id: 'green-beans', name: 'Green Beans', group: 'Beans & greens', sizes: [
-      { label: 'Full Pan', price: 129.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 69.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
+    { id: 'dressing', name: 'Dressing', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 200.0, serves: 30, unit: 'full' },
+      { label: 'Half Pan', price: 100.0, serves: 15, unit: 'half' }
     ]},
-    { id: 'smothered-beans', name: 'Smothered Green Beans', group: 'Beans & greens', sizes: [
-      { label: 'Full Pan', price: 159.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 79.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
+    { id: 'greens', name: 'Southern-Style Greens', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 280.0, serves: 30, unit: 'full' },
+      { label: 'Half Pan', price: 140.0, serves: 15, unit: 'half' }
     ]},
-    { id: 'vegan-beans', name: 'Vegan Green Beans', group: 'Beans & greens', sizes: [
-      { label: 'Full Pan', price: 119.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 59.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
+    { id: 'gravy', name: 'Gravy', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 80.0, serves: 60, unit: 'full' },
+      { label: 'Half Pan', price: 40.0, serves: 30, unit: 'half' }
     ]},
-    { id: 'greens', name: 'Greens', group: 'Beans & greens', sizes: [
-      { label: 'Full Pan', price: 199.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 99.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'cabbage', name: 'Cabbage', group: 'Beans & greens', sizes: [
-      { label: 'Full Pan', price: 99.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 69.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'dirty-cabbage', name: 'Dirty Cabbage', group: 'Beans & greens', sizes: [
-      { label: 'Full Pan', price: 199.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 99.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'corn', name: 'Corn on the Cob', group: 'Beans & greens', sizes: [
-      { label: 'Full Pan', price: 109.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 59.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 35.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'mixed-veg', name: 'Mixed Vegetables', group: 'Beans & greens', sizes: [
-      { label: 'Full Pan', price: 109.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 59.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'smoked-rice', name: 'Smoked Rice', group: 'Rice, salads & bread', sizes: [
-      { label: 'Full Pan', price: 119.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 69.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'dirty-rice', name: 'Dirty Rice', group: 'Rice, salads & bread', sizes: [
-      { label: 'Full Pan', price: 199.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 99.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 49.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'slaw', name: 'Cole Slaw', group: 'Rice, salads & bread', sizes: [
-      { label: 'Full Pan', price: 109.0, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 69.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 39.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'garden-salad', name: 'Garden Salad', group: 'Rice, salads & bread', sizes: [
-      { label: 'Full Pan', price: 99.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 49.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 25.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'fruit', name: 'Fruit', group: 'Rice, salads & bread', sizes: [
-      { label: 'Full Pan', price: 99.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 49.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 25.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'deviled-eggs', name: 'Deviled Eggs', group: 'Rice, salads & bread', sizes: [
-      { label: 'Full Pan', price: 89.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 49.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 29.99, serves: 10, unit: 'third' }
-    ]},
-    { id: 'cornbread', name: 'Cornbread', group: 'Rice, salads & bread', sizes: [
-      { label: 'Full Pan', price: 159.99, serves: 30, unit: 'full' },
-      { label: '1/2 Pan',  price: 109.99, serves: 15, unit: 'half' },
-      { label: '1/3 Pan',  price: 59.99, serves: 10, unit: 'third' }
+    { id: 'cornbread', name: 'Cornbread', group: 'Sides', sizes: [
+      { label: 'Full Pan', price: 120.0, serves: 60, unit: 'full' },
+      { label: 'Half Pan', price: 60.0, serves: 30, unit: 'half' }
     ]}
   ];
 
@@ -418,14 +295,10 @@
     var extrasTotal = extras.reduce(function (sum, e) { return sum + e.total; }, 0);
     var base = food + extrasTotal;
 
-    var belowMinimum = base < CONFIG.minimumEvent;
-    var mid = Math.max(base, CONFIG.minimumEvent);
-
-    // Delivery runs from the lowest fee to the highest, so it widens the
-    // range rather than being guessed. The bottom never dips under the
-    // minimum, so a growing event can never look cheaper.
-    var low = Math.max(CONFIG.minimumEvent, base * (1 - CONFIG.rangeSpread) + CONFIG.delivery.low);
-    var high = Math.max(low, mid * (1 + CONFIG.rangeSpread) + CONFIG.delivery.high);
+    // No dollar minimum any more — Shon's floor is 25 guests, which the
+    // slider already enforces, so the quote is simply what it costs.
+    var low = base * (1 - CONFIG.rangeSpread) + CONFIG.delivery.low;
+    var high = Math.max(low, base * (1 + CONFIG.rangeSpread) + CONFIG.delivery.high);
 
     return {
       builds: builds,
@@ -433,8 +306,7 @@
       food: food,
       low: low,
       high: high,
-      perGuest: mid / state.guests,
-      belowMinimum: belowMinimum
+      perGuest: base / state.guests
     };
   }
 
@@ -460,8 +332,8 @@
 
     var state = {
       guests: CONFIG.guests.start,
-      meats: ['ribs', 'pulled-pork'],
-      sides: ['mac', 'beans'],
+      meats: ['rib-tips', 'pulled-pork'],
+      sides: ['mac', 'baked-beans'],
       service: 'dropoff',
       plates: true,
       eventType: ''
@@ -652,9 +524,6 @@
       elPer.textContent = 'About ' + money(result.perGuest, 2) + ' a guest · ' + state.guests + ' guests';
 
       var notes = [];
-      if (result.belowMinimum) {
-        notes.push('This event is under our ' + money(CONFIG.minimumEvent) + ' catering minimum, so the minimum is what\'s shown.');
-      }
       notes.push('Includes delivery, ' + money(CONFIG.delivery.low) + '\u2013' +
         money(CONFIG.delivery.high) + ' depending on distance.');
       elNote.textContent = notes.join(' ');

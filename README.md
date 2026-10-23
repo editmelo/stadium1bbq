@@ -64,36 +64,40 @@ Removing `data-no-endpoint` is what switches off the "not connected" message —
 the handler in `assets/js/site.js` only binds to forms that have that
 attribute. Then delete that block in `site.js` once both forms are live.
 
-### 2. Pricing — from Shon's catering list, a few things to confirm
+### 2. Pricing — from Shon's October 2026 sheets
 
-Every catering price on the site now comes from **Catering for Website.xlsx**,
-Shon's Square catalog export (September 2026). Pop-up prices come from
-**Current Menu for Pop Up Events.png**. All 118 catering prices were checked
-against the spreadsheet by script, not by eye.
+Catering prices come from the photographed sheets in `Updates/websitechanges`:
+**Customer-Facing A La Carte Prices**, **Corporate Catering Packages**,
+**Family Meals - Working Model** and the **Seasonal Fall/Winter Menu**. Shon's
+note with them: *"These will be the only items that need to be on the site."*
 
-The export is a full Square catalog, so it mixes catering pans with
-single servings sold at past events. Only the catering listings are used.
-A few things in it needed a judgment call — worth a quick yes/no from Shon:
+That replaced the Square-catalog pricing entirely. The menu is now 25 items,
+half pan and full pan only — no 1/3 pans — and every full pan is exactly twice
+the half. Prices rose sharply: a half pan of Mac & Cheese went $69.99 → $100,
+Rib Tips $69.99 → $115. Items not on the new sheet are gone, including Ribs,
+St. Louis Ribs, Brisket, Pulled Beef and all the seafood.
 
-- **Two rib listings.** "Pan Ribs" ($79.99 / $139.99 / $259.99) and
-  "St. Louis Style Ribs" ($49.99 / $99.99 / $199.99) are both in the catalog.
-  Both are on the site as separate items. If one is retired, delete it from
-  the menu page and from `MEATS` in `assets/js/estimator.js`.
-- **Steak Bites** appears twice: $49.99 / $109.99 / $210.99 in the Catering
-  category (used), and $75.99 / $149.99 / $299.99 uncategorized.
-- **Servers are $25 each** in the catalog, but nothing says how many an event
-  needs. The builder assumes **one server per 50 guests** — see
-  `guestsPerServer` in `CONFIG`.
-- **The $800 event minimum** is still an inference from the packet, not
-  something in the catalog.
-- **"Your Choice — $15"** is on the pop-up flyer with no description, so it's
-  listed exactly that way.
-- Left off as probable duplicates: "Veggie Pan Mixed" (vs Mixed Vegetables)
-  and plain "Oreo Chocolate Mousse" (vs the Mousse Cake). Pulled Beef and
-  piece-priced baked/fried chicken are gone — they're not in the catalog.
+The sheets also carry **direct cost and margin columns**. Those are internal
+and deliberately stay off the site; only the customer-facing columns are used.
 
-Typos in the Square names are corrected on the site ("Candid Yams" →
-Candied Yams, "Gnache" → Ganache). Worth fixing in Square too.
+Still worth confirming with Shon:
+
+- **Family meals are a "Working Model".** Her own sheet says *"these prices
+  are not yet fully cost-engineered"* and lists what still needs verifying
+  (meat weights, container sizes, packaging cost). They are live at
+  $60/$90/$120 because she asked for them to be, but they are the one set of
+  numbers on the site she has not signed off as final.
+- **Servers per guest.** $25 a server is hers; one server per 50 guests is
+  still the builder's assumption (`guestsPerServer`).
+- **Event delivery.** $25–$200 by distance, from the Square catalog, still
+  applies to event catering. The new $5–$10 fee is family-meal delivery only
+  and appears in the family meals terms.
+- **Repast photograph.** Shon asked for fried chicken, mashed potatoes and
+  green beans. No such photograph exists in the library yet, so that card
+  keeps its current plate — swap it when the photo arrives.
+
+Two things her notes referenced but were not in the folder: the **FAQ** and
+the **Hendricks County Winter Market dates**.
 
 ### 3. Phone number
 
@@ -173,56 +177,60 @@ location are never touched.
 
 ### How it prices
 
-Every number comes from Stadium 1's catering list. The estimator:
-
 1. Works out meat servings needed — one per guest, plus a bit for each extra
-   meat, since people sample instead of picking one
+   entrée, since people sample instead of picking one
 2. Works out side servings — less of each when there are more to choose from
-3. Finds the cheapest set of pans covering that, shaped the way a caterer
-   actually loads a van (full pans for the bulk, at most one half and two
-   thirds for the remainder)
+3. Finds the cheapest set of pans covering that
 4. Adds **plates & utensils** at $49.99 per 25 guests (the visitor can untick
    it), and on full service **servers** at $25 each
-5. Applies the event minimum
-6. Shows a range, with **delivery at $25–$200** folded in — the lowest fee
-   at the bottom, the highest at the top, since it depends on distance
+5. Shows a range with **delivery at $25–$200** folded in
 
-Serving counts are assumptions, not from the catalog: a meat pan feeds about
-8 / 12 / 24 (third / half / full), a side pan about 10 / 15 / 30, brisket
-about 3 people a pound.
+There is no dollar minimum any more. Shon's floor is **25 guests**, which the
+slider enforces, so the quote is simply what the food costs.
 
-Examples at current prices, drop-off with plates:
+Serving counts are assumptions, not from the sheet: an entrée half pan feeds
+about 12 and a full pan 24; a side half pan about 15 and a full pan 30; a
+6 qt pot of chili or chowder about 24 eight-ounce servings.
+
+Examples, drop-off with plates:
 
 | Event | Estimate |
 |---|---|
-| 20 guests · ribs, pulled pork · mac, beans | $800 – $1,100 (minimum applies) |
-| 100 guests · ribs, pulled pork · mac, beans | $1,825 – $2,475 |
-| 150 guests, full service · tips, pulled chicken, chicken · mac, green beans | $2,825 – $3,775 |
-| 350 guests · ribs, pulled pork · mac, beans | $6,050 – $7,875 |
+| 25 guests · pulled pork · mac, green beans | $425 – $700 |
+| 50 guests · rib tips, pulled chicken · mac, baked beans | $900 – $1,300 |
+| 150 guests, full service · rib tips, pulled pork, wings · mac, green beans, cornbread | $2,900 – $3,875 |
+| 300 guests, full service · beef bites, smoked turkey · mac, greens | $6,050 – $7,875 |
 
-The packet put Shon's high end around $5,000. At the new prices a 350-guest
-spread lands above that, which is expected — the packet predates them.
+### Seasonal items
+
+The six chilis and chowders are one block on the menu page (`id="seasonal"`)
+and one group in the builder, exactly so the whole lot can come off at the end
+of winter without touching anything else. Shon's sheet asked for them to be
+removable on their own.
 
 ### Changing prices
 
 Prices live in two places that must agree: the tables on `menu/index.html`
-and the `MEATS` / `SIDES` arrays in `assets/js/estimator.js`. The menu shows
-`.99` prices; the estimate rounds to whole dollars.
+and the `MEATS` / `SIDES` arrays in `assets/js/estimator.js`.
 
 Service costs sit in one `CONFIG` block at the top of the estimator:
 
 ```js
 var CONFIG = {
-  minimumEvent: 800,                         // NOT in the catalog — confirm
+  minimumGuests: 25,                         // Shon's floor, enforced by the slider
   serverFee: 25,                             // per server, full service
   guestsPerServer: 50,                       // ASSUMPTION — confirm
   plates: { price: 49.99, guests: 25 },      // Plates & Utensils Pack
-  delivery: { low: 25, high: 200 },          // delivery fee tiers
-  rangeSpread: 0.12,                         // how wide the quoted range is
-  guests: { min: 20, max: 400, step: 5, start: 150 },
+  delivery: { low: 25, high: 200 },          // event catering, by distance
+  rangeSpread: 0.12,
+  guests: { min: 25, max: 400, step: 5, start: 150 },
   ...
 };
 ```
+
+If you add or remove a menu item, check the default selections in `state`
+near the top of `init()` — they reference item ids, and a stale id silently
+drops out of the starting build.
 
 After changing an asset, bump the `?v=` number on every page (see Caching).
 
@@ -246,12 +254,12 @@ They must **never** be served `immutable`. That tells a browser not even
 to ask again, and with stable filenames a fix can then never reach anyone
 who has already visited.
 
-Asset URLs in the HTML carry `?v=9`. If you change a stylesheet or script
+Asset URLs in the HTML carry `?v=10`. If you change a stylesheet or script
 and want it to land instantly for everyone — including anyone holding a
 stale copy — bump that number everywhere it appears:
 
 ```
-grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=9/?v=10/g'
+grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=10/?v=11/g'
 ```
 
 The `og:image` and schema URLs deliberately have no version, so social
