@@ -14,7 +14,7 @@
   'use strict';
 
   var MIN_WIDTH = 1080;   // below this the column would be too narrow to help
-  var VERSION = '?v=11';
+  var VERSION = '?v=12';
 
   function init() {
     var panel = document.querySelector('[data-menu-preview]');

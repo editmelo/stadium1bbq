@@ -23,7 +23,8 @@
     minimumGuests: 25,
 
     // Service costs, from Shon's catering list.
-    serverFee: 25,             // per server, full service only
+    serverFee: 50,             // per server PER HOUR, full service only
+    serverHours: 3,            // ASSUMPTION — a typical service window. Confirm with Shon.
     guestsPerServer: 50,       // ASSUMPTION — one server per 50 guests. Confirm with Shon.
     plates: { price: 49.99, guests: 25 },   // Plates & Utensils Pack, 25 settings
     delivery: { low: 25, high: 200 },    // delivery fee tiers, by distance
@@ -289,8 +290,9 @@
     }
     if (state.service === 'full') {
       var servers = Math.max(1, Math.ceil(state.guests / CONFIG.guestsPerServer));
-      extras.push({ name: 'Servers', detail: servers + '\u00d7 server',
-                    total: servers * CONFIG.serverFee });
+      extras.push({ name: 'Servers',
+                    detail: servers + '\u00d7 server \u00b7 ' + CONFIG.serverHours + ' hrs at $' + CONFIG.serverFee + '/hr',
+                    total: servers * CONFIG.serverFee * CONFIG.serverHours });
     }
     var extrasTotal = extras.reduce(function (sum, e) { return sum + e.total; }, 0);
     var base = food + extrasTotal;

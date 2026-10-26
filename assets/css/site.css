@@ -960,6 +960,58 @@ tr[data-shot]:focus-visible { outline: 3px solid var(--gold); outline-offset: -3
 .band--cream .figure-wide figcaption { color: #6b5a4e; }
 
 /* --------------------------------------------------------------------------
+   14d. FAQ
+   -------------------------------------------------------------------------- */
+.faq { max-width: 56rem; }
+.faq__group + .faq__group { margin-top: clamp(2.5rem, 5vw, 4rem); }
+.faq__group-title {
+  font-size: var(--step-2);
+  padding-bottom: 0.85rem;
+  border-bottom: 2px solid rgba(247,239,226,.15);
+  margin-bottom: 0.25rem;
+}
+
+/* Native <details>, so every answer is in the page for search engines and
+   readable with JavaScript off. */
+.faq__item { border-bottom: 1px solid rgba(247,239,226,.1); }
+.faq__q {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.15rem 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--cream);
+  transition: color .18s var(--ease);
+}
+.faq__q::-webkit-details-marker { display: none; }
+.faq__q::after {
+  content: "";
+  flex: none;
+  width: 11px; height: 11px;
+  margin: 0.45rem 0 0 auto;
+  border-right: 2px solid var(--flame);
+  border-bottom: 2px solid var(--flame);
+  transform: rotate(45deg);
+  transition: transform .25s var(--ease);
+}
+.faq__item[open] .faq__q::after { transform: rotate(-135deg); }
+.faq__q:hover { color: var(--gold); }
+.faq__q:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+.faq__a { padding: 0 0 1.3rem; max-width: var(--measure); }
+.faq__a p { color: var(--smoke); font-size: 0.96rem; line-height: 1.6; }
+.faq__a p + p { margin-top: 0.7rem; }
+.faq__a a { color: var(--gold); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .faq__item[open] .faq__a { animation: faq-open .28s var(--ease); }
+  @keyframes faq-open { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+}
+
+/* --------------------------------------------------------------------------
    15. Forms
    -------------------------------------------------------------------------- */
 .form { display: grid; gap: 1.15rem; }

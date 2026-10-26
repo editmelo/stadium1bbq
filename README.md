@@ -10,7 +10,8 @@ directly — the clean URLs below depend on one.
 home/index.html         /home        Home — splits catering vs. plates
 catering/index.html     /catering    The money page. Cookout builder + quote form
 menu/index.html         /menu        Full menu and prices
-find-us/index.html      /find-us     Market plates, locations, Facebook
+find-us/index.html      /find-us     Market dates, pop-up menu, Facebook
+faq/index.html          /faq         20 questions, native <details>, FAQPage schema
 about/index.html        /about       Story, what sets them apart, contact form
 index.html                           Redirect stub: bare domain -> /home
 assets/                              Stylesheet, scripts, photography, logo
@@ -80,24 +81,27 @@ St. Louis Ribs, Brisket, Pulled Beef and all the seafood.
 The sheets also carry **direct cost and margin columns**. Those are internal
 and deliberately stay off the site; only the customer-facing columns are used.
 
-Still worth confirming with Shon:
+Confirmed by Shon in October:
 
-- **Family meals are a "Working Model".** Her own sheet says *"these prices
-  are not yet fully cost-engineered"* and lists what still needs verifying
-  (meat weights, container sizes, packaging cost). They are live at
-  $60/$90/$120 because she asked for them to be, but they are the one set of
-  numbers on the site she has not signed off as final.
-- **Servers per guest.** $25 a server is hers; one server per 50 guests is
-  still the builder's assumption (`guestsPerServer`).
-- **Event delivery.** $25–$200 by distance, from the Square catalog, still
-  applies to event catering. The new $5–$10 fee is family-meal delivery only
-  and appears in the family meals terms.
-- **Repast photograph.** Shon asked for fried chicken, mashed potatoes and
-  green beans. No such photograph exists in the library yet, so that card
-  keeps its current plate — swap it when the photo arrives.
+- **Family meal prices are final** at $60 / $90 / $120.
+- **Desserts stay.** Whole bundt cakes are now $45 (three were $36), and the
+  "Your Choice Combo, six" line came off.
+- **Servers are $50 an hour**, not $25 a head. The builder bills
+  `serverFee x serverHours x servers`.
+- **Delivery splits by job.** $5–$10 covers a Friday family-meal drop, which
+  is small and has no setup. Event catering keeps the $25–$200 distance tiers
+  because it is more food and includes setup.
+- **"Your Choice $15"** was removed from the pop-up menu.
 
-Two things her notes referenced but were not in the folder: the **FAQ** and
-the **Hendricks County Winter Market dates**.
+Still an assumption, still worth a yes/no:
+
+- **Server hours.** $50/hr is hers; **3 hours** is the builder's assumption for
+  a service window, set by `serverHours` in `CONFIG`. It is shown to the
+  customer as "3 hrs at $50/hr" so the basis is visible and easy to correct.
+- **Servers per guest** is still one per 50 (`guestsPerServer`).
+- **Repast photographs.** The fried chicken, mashed potato and green bean
+  shots Shon sent look like licensed stock rather than her own kitchen. They
+  are used as she asked; worth confirming she holds a licence.
 
 ### 3. Phone number
 
@@ -125,6 +129,20 @@ so skipping that step leaves photos on their side.
 
 **Still worth shooting:** Shon at the pit, a catering table before anyone
 eats, and a wide shot of a repast or corporate spread.
+
+---
+
+## The FAQ page
+
+`/faq` holds twenty questions in five groups, written by Shon. Each one is a
+native `<details>`, so every answer is in the HTML for search engines, is
+readable with JavaScript off, and opens with the keyboard. The page also
+carries `FAQPage` structured data, which is what lets Google show the
+questions directly in results.
+
+To add a question, copy a `.faq__item` block. Keep the schema block at the
+bottom of `<head>` in step with it, or the markup and the structured data
+drift apart.
 
 ---
 
@@ -254,12 +272,12 @@ They must **never** be served `immutable`. That tells a browser not even
 to ask again, and with stable filenames a fix can then never reach anyone
 who has already visited.
 
-Asset URLs in the HTML carry `?v=11`. If you change a stylesheet or script
+Asset URLs in the HTML carry `?v=12`. If you change a stylesheet or script
 and want it to land instantly for everyone — including anyone holding a
 stale copy — bump that number everywhere it appears:
 
 ```
-grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=11/?v=12/g'
+grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=12/?v=13/g'
 ```
 
 The `og:image` and schema URLs deliberately have no version, so social
