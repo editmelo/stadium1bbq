@@ -12,6 +12,11 @@ catering/index.html     /catering    The money page. Cookout builder + quote for
 menu/index.html         /menu        Full menu and prices
 find-us/index.html      /find-us     Market dates, pop-up menu, Facebook
 faq/index.html          /faq         20 questions, native <details>, FAQPage schema
+
+Market days: the winter market is **every other Wednesday, 4:00–6:30 PM** at
+the Hendricks County Fairgrounds (Dec 15 is the one Tuesday, which is why the
+flyer calls it a special market). Pike is **summer Saturdays, 8 AM–12 PM,
+June to August**.
 about/index.html        /about       Story, what sets them apart, contact form
 index.html                           Redirect stub: bare domain -> /home
 assets/                              Stylesheet, scripts, photography, logo
@@ -206,9 +211,11 @@ location are never touched.
 There is no dollar minimum any more. Shon's floor is **25 guests**, which the
 slider enforces, so the quote is simply what the food costs.
 
-Serving counts are assumptions, not from the sheet: an entrée half pan feeds
-about 12 and a full pan 24; a side half pan about 15 and a full pan 30; a
-6 qt pot of chili or chowder about 24 eight-ounce servings.
+Serving counts: an entrée half pan feeds about 12 and a full pan 24, and a
+6 qt pot of chili or chowder about 24 eight-ounce servings — those are still
+assumptions. **Sides are 20 to a half pan and 40 to a full**, which Shon gave
+in November. Cornbread is the one exception at 30, because its half pan is a
+printed 30 pieces.
 
 Examples, drop-off with plates:
 
@@ -272,12 +279,12 @@ They must **never** be served `immutable`. That tells a browser not even
 to ask again, and with stable filenames a fix can then never reach anyone
 who has already visited.
 
-Asset URLs in the HTML carry `?v=12`. If you change a stylesheet or script
+Asset URLs in the HTML carry `?v=13`. If you change a stylesheet or script
 and want it to land instantly for everyone — including anyone holding a
 stale copy — bump that number everywhere it appears:
 
 ```
-grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=12/?v=13/g'
+grep -rl '?v=' */index.html | xargs sed -i '' 's/?v=13/?v=14/g'
 ```
 
 The `og:image` and schema URLs deliberately have no version, so social

@@ -58,7 +58,8 @@
 
      `serves` is how many people one pan feeds. That part is not on the
      sheet — a half pan is taken as 12 for an entrée and 15 for a side,
-     and a 6 qt pot as 24 eight-ounce servings.
+     and a 6 qt pot as 24 eight-ounce servings. Cornbread is the one
+     exception: its half pan is a printed 30 pieces, so it stays at 30.
 
      These must match menu/index.html. Both are generated from one
      transcription of the sheet — change a price in one, change it in
@@ -121,48 +122,48 @@
 
   var SIDES = [
     { id: 'mac', name: 'Mac & Cheese', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 200.0, serves: 30, unit: 'full' },
-      { label: 'Half Pan', price: 100.0, serves: 15, unit: 'half' }
+      { label: 'Full Pan', price: 200.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 100.0, serves: 20, unit: 'half' }
     ]},
     { id: 'mashed', name: 'Mashed Potatoes', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 90.0, serves: 30, unit: 'full' },
-      { label: 'Half Pan', price: 45.0, serves: 15, unit: 'half' }
+      { label: 'Full Pan', price: 90.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 45.0, serves: 20, unit: 'half' }
     ]},
     { id: 'rice', name: 'Seasoned Rice', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 80.0, serves: 30, unit: 'full' },
-      { label: 'Half Pan', price: 40.0, serves: 15, unit: 'half' }
+      { label: 'Full Pan', price: 80.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 40.0, serves: 20, unit: 'half' }
     ]},
     { id: 'normandy', name: 'Normandy Vegetables', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 110.0, serves: 30, unit: 'full' },
-      { label: 'Half Pan', price: 55.0, serves: 15, unit: 'half' }
+      { label: 'Full Pan', price: 110.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 55.0, serves: 20, unit: 'half' }
     ]},
     { id: 'green-beans', name: 'Green Beans', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 120.0, serves: 30, unit: 'full' },
-      { label: 'Half Pan', price: 60.0, serves: 15, unit: 'half' }
+      { label: 'Full Pan', price: 120.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 60.0, serves: 20, unit: 'half' }
     ]},
     { id: 'baked-beans', name: 'Baked Beans', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 130.0, serves: 30, unit: 'full' },
-      { label: 'Half Pan', price: 65.0, serves: 15, unit: 'half' }
+      { label: 'Full Pan', price: 130.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 65.0, serves: 20, unit: 'half' }
     ]},
     { id: 'sweet-potatoes', name: 'Sweet Potatoes', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 140.0, serves: 30, unit: 'full' },
-      { label: 'Half Pan', price: 70.0, serves: 15, unit: 'half' }
+      { label: 'Full Pan', price: 140.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 70.0, serves: 20, unit: 'half' }
     ]},
     { id: 'skillet-corn', name: 'Skillet Corn', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 170.0, serves: 30, unit: 'full' },
-      { label: 'Half Pan', price: 85.0, serves: 15, unit: 'half' }
+      { label: 'Full Pan', price: 170.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 85.0, serves: 20, unit: 'half' }
     ]},
     { id: 'dressing', name: 'Dressing', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 200.0, serves: 30, unit: 'full' },
-      { label: 'Half Pan', price: 100.0, serves: 15, unit: 'half' }
+      { label: 'Full Pan', price: 200.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 100.0, serves: 20, unit: 'half' }
     ]},
     { id: 'greens', name: 'Southern-Style Greens', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 280.0, serves: 30, unit: 'full' },
-      { label: 'Half Pan', price: 140.0, serves: 15, unit: 'half' }
+      { label: 'Full Pan', price: 280.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 140.0, serves: 20, unit: 'half' }
     ]},
     { id: 'gravy', name: 'Gravy', group: 'Sides', sizes: [
-      { label: 'Full Pan', price: 80.0, serves: 60, unit: 'full' },
-      { label: 'Half Pan', price: 40.0, serves: 30, unit: 'half' }
+      { label: 'Full Pan', price: 80.0, serves: 40, unit: 'full' },
+      { label: 'Half Pan', price: 40.0, serves: 20, unit: 'half' }
     ]},
     { id: 'cornbread', name: 'Cornbread', group: 'Sides', sizes: [
       { label: 'Full Pan', price: 120.0, serves: 60, unit: 'full' },
