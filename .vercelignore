@@ -1,0 +1,2 @@
+# Dev-only. The regression harness has no business on the live site.
+tests/

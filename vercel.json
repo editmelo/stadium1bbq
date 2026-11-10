@@ -74,7 +74,7 @@
     },
     {
       "source": "/cart",
-      "destination": "/menu",
+      "destination": "/find-us#order",
       "permanent": true
     },
     {

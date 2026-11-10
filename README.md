@@ -45,7 +45,13 @@ Adding a page means adding a folder, not a `.html` file.
 
 ## Before this goes live
 
-Four things need a decision. The first two are the important ones.
+Five things need a decision. The first two are the important ones.
+
+**Also waiting on you:** online ordering is built and tested but switched
+off until three environment variables are set in Vercel. It is safe to
+deploy as-is — the page says so honestly and keeps the Square link. See
+[Ordering on the site](#ordering-on-the-site) for exactly what to add and
+where the token comes from.
 
 ### 1. Connect the forms — they currently go nowhere
 
@@ -258,6 +264,98 @@ near the top of `init()` — they reference item ids, and a stale id silently
 drops out of the starting build.
 
 After changing an asset, bump the `?v=` number on every page (see Caching).
+
+---
+
+## Ordering on the site
+
+Customers build an order on `/find-us#order` and go straight to Square's
+payment page. They never retype the order anywhere. When they pay, Square
+creates a real **Order** in Shon's Order Manager, so the kitchen gets a
+ticket — that is the reason this uses the Checkout API and not the Web
+Payments SDK, which would take money without creating an order.
+
+### The pieces
+
+| File | What it does |
+| --- | --- |
+| `api/_catalog.js` | The only place pop-up prices live. Items, sides, meats, cents. |
+| `api/menu.js` | `GET /api/menu` — serves the catalog so the page renders from it, plus `ordering: true/false`. |
+| `api/checkout.js` | `POST /api/checkout` — prices the cart, asks Square for a payment link. |
+| `assets/js/order.js` | The cart. Fetches the menu, holds the lines, sends the browser to Square. |
+| `order-confirmed/` | Where Square sends people after they pay. |
+
+**The browser never sends prices and is never believed about them.** It
+sends item ids and choices; the server looks up the money in
+`_catalog.js`. A cart claiming a $20 plate costs a penny is still charged
+$20. This is tested — see `tests/`.
+
+### Switching it on
+
+Nothing works until three environment variables exist in Vercel. Until
+they do, the page says so honestly: no cart is drawn, and the printed
+price list, the Square link and the phone number are all still there. **So
+it is safe to deploy this before the credentials exist.**
+
+In Vercel → the `stadium1bbq` project → **Settings → Environment
+Variables**, add these to **Production** (and Preview, if you want the
+preview builds to take orders too):
+
+| Name | Value |
+| --- | --- |
+| `SQUARE_ACCESS_TOKEN` | Shon's Square **access token** (see below) |
+| `SQUARE_LOCATION_ID` | Shon's Square **location ID** (see below) |
+| `SQUARE_ENV` | `production` — or `sandbox` to test with fake cards first |
+| `SITE_ORIGIN` | `https://stadium1bbq.revieweditmelo.com` (or the live domain) |
+
+Then **redeploy** — environment variables only reach a new build.
+
+**Where the token comes from.** In Square's Developer Dashboard
+(<https://developer.squareup.com/apps>), signed in on the account that owns
+the business: create an application, then under **Credentials** copy the
+**Production access token**. It needs the `ORDERS_WRITE`, `ORDERS_READ`
+and `PAYMENTS_WRITE` permissions. Treat it like a password — it can take
+money. It goes in Vercel and nowhere else; never in this repo.
+
+**Where the location ID comes from.** Same dashboard, the **Locations**
+tab. It looks like `L4K8XBWEYCQ3P`. If the business has more than one
+location, pick the one the pop-up sales should land under.
+
+Start with `SQUARE_ENV=sandbox` and a sandbox token if you want to place a
+test order end to end first — Square's test card is `4111 1111 1111 1111`,
+any future expiry, any CVV. Sandbox orders show in the sandbox dashboard,
+not the real one.
+
+### After it is on
+
+The two **Order Online** buttons on Find Us rewire themselves to the cart
+automatically once `/api/menu` reports `ordering: true` — there is no
+switch to flip by hand. While ordering is off they keep pointing at
+`cash.app/$stadium1bbq`, so that path never breaks.
+
+### Changing a price
+
+Edit `api/_catalog.js` only. The page renders from the same file that
+prices the order, so the two cannot drift. Then bump the `?v=` number so
+browsers pick up the change (see Caching), and update the printed price
+table in `find-us/index.html`, which is hand-written markup and will not
+follow on its own.
+
+Note this catalog is **separate from Shon's Square item catalog**, which is
+stale ($5 sliders against the $20/$15 pop-up plates). Orders placed here
+carry their own names and prices, so the stale catalog does not affect
+them. Shon can tidy her catalog whenever she likes without touching this.
+
+### Testing it
+
+```
+./tests/run.sh
+```
+
+Needs Node and Google Chrome; no install step. It drives a headless
+browser through the real cart against the real API handlers with Square
+stubbed out, and checks both states — credentials set and credentials
+missing. 53 checks at the time of writing.
 
 ---
 

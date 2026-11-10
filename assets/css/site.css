@@ -761,6 +761,176 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* --------------------------------------------------------------------------
+   13b. Pop-up ordering cart
+   Reuses .builder / .panel / .ticket / .pan from the cookout builder, so the
+   cart reads as the same object as the quote estimator. Only the item cards
+   and the few cart-specific bits are new.
+   -------------------------------------------------------------------------- */
+.order-grid {
+  display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.order-card {
+  display: flex; flex-direction: column;
+  background: var(--char);
+  border: 1px solid rgba(247,239,226,.12);
+  border-radius: var(--r);
+  padding: 1.1rem 1.15rem 1.15rem;
+}
+.order-card__head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 0.75rem; margin-bottom: 0.5rem;
+}
+.order-card__head h3 { font-size: 1.12rem; line-height: 1.15; }
+.order-card__price {
+  font-family: var(--ticket); font-size: 0.86rem;
+  color: var(--gold); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.order-card__blurb {
+  font-size: 0.84rem; line-height: 1.5; color: var(--smoke);
+  margin-bottom: 0.9rem;
+}
+
+.order-card__field { margin-bottom: 0.7rem; }
+.order-card__field label {
+  display: block;
+  font-family: var(--ticket); font-size: 0.6rem;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--smoke); margin-bottom: 0.35rem;
+}
+.order-card__field select {
+  width: 100%;
+  padding: 0.6rem 2.1rem 0.6rem 0.75rem;
+  background: var(--soot);
+  border: 1px solid rgba(247,239,226,.18);
+  border-radius: var(--r-sm);
+  color: var(--cream);
+  font-family: var(--body); font-size: 0.92rem;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--smoke) 50%),
+                    linear-gradient(135deg, var(--smoke) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 54%, calc(100% - 12px) 54%;
+  background-size: 6px 6px; background-repeat: no-repeat;
+  transition: border-color .18s var(--ease), box-shadow .3s var(--ease);
+}
+.order-card__field select:hover { border-color: rgba(247,239,226,.32); }
+.order-card__field select:focus {
+  border-color: var(--flame); outline: none;
+  box-shadow: 0 0 0 3px rgba(239,95,12,.2);
+}
+
+/* Pushed to the bottom so cards with different numbers of choices still
+   line their buttons up with each other. */
+.order-card__add { margin-top: auto; width: 100%; justify-content: center; }
+
+/* The cart lines sit inside .pan, but carry text rather than drawn pans,
+   so the choices read left and Remove sits hard right. */
+.order-cart .pan__qty {
+  margin-left: 0; text-align: left; flex: 1 1 auto;
+  text-transform: none; letter-spacing: 0.02em; font-size: 0.66rem;
+  color: var(--smoke);
+}
+.order-remove {
+  flex: 0 0 auto; margin-left: auto;
+  background: none; border: 0; padding: 0.1rem 0;
+  font-family: var(--ticket); font-size: 0.6rem;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--smoke-dim); cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: color .18s var(--ease), border-color .18s var(--ease);
+}
+.order-remove:hover, .order-remove:focus-visible {
+  color: var(--gold); border-bottom-color: var(--gold);
+}
+
+/* Trouble has to read as trouble, not as the gold confirmation colour. */
+.ticket__sent.is-bad { color: var(--flame); }
+
+.order-cart .pan + .pan {
+  border-top: 1px dashed rgba(247,239,226,.16);
+  padding-top: 0.85rem;
+}
+
+/* The disabled pay button should look unavailable, not just inert. */
+.ticket__foot .btn[disabled] {
+  opacity: 0.45; cursor: not-allowed; filter: saturate(0.5);
+}
+.ticket__foot .btn[disabled]:hover { transform: none; }
+/* The toggle only exists for the phone bar below; on wide screens the whole
+   order list is on show and there is nothing to expand. */
+.cart-toggle { display: none; }
+
+/* ---- Phones: the cart becomes a bar at the bottom of the screen ----
+   Stacked the way .builder normally stacks, the cart would land below six
+   item cards, so adding a plate would give no visible feedback at all.
+   The bar keeps the running total and the pay button in reach, and the
+   line list folds away behind "Show" so it never buries the menu. */
+@media (max-width: 940px) {
+  .order-cart {
+    position: fixed; z-index: 40;
+    /* top:auto matters: .ticket sets top:96px for its sticky desktop
+       behaviour, and a fixed box with both top and bottom set stretches
+       to fill the gap instead of hugging its content. */
+    left: 0; right: 0; bottom: 0; top: auto;
+    border-radius: 0;
+    border-left: 0; border-right: 0;
+    border-top: 1px solid rgba(255,138,31,.4);
+    box-shadow: 0 -14px 34px rgba(0,0,0,.55);
+    display: flex; flex-direction: column;
+    /* Clear of the iOS home indicator. */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    transform: translateY(0);
+    transition: transform .25s var(--ease);
+  }
+  /* Nothing in the cart, nothing to say — slide it away so the bar is not
+     sitting over the menu announcing $0.00. */
+  .order-cart.is-empty { transform: translateY(110%); pointer-events: none; }
+
+  .order-cart .ticket__top {
+    order: 2;
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.7rem clamp(1rem, 4vw, 1.4rem);
+    border-bottom: 0;
+  }
+  .order-cart .ticket__title { display: none; }
+  .order-cart .ticket__range { font-size: 1.55rem; line-height: 1; }
+  .order-cart .ticket__per { margin: 0; font-size: 0.64rem; }
+
+  .cart-toggle {
+    display: block; margin-left: auto;
+    background: none; border: 1px solid rgba(247,239,226,.28);
+    border-radius: var(--r-sm);
+    padding: 0.45rem 0.8rem;
+    font-family: var(--ticket); font-size: 0.6rem;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--cream); cursor: pointer;
+  }
+  .cart-toggle:hover, .cart-toggle:focus-visible { border-color: var(--gold); color: var(--gold); }
+
+  /* The list sits above the bar and only when asked for. */
+  .order-cart .ticket__body {
+    order: 1;
+    display: none;
+    max-height: 42vh; overflow-y: auto;
+    border-bottom: 1px dashed rgba(247,239,226,.2);
+    padding: 1rem clamp(1rem, 4vw, 1.4rem);
+  }
+  .order-cart.is-open .ticket__body { display: block; }
+
+  .order-cart .ticket__foot {
+    order: 3;
+    padding: 0 clamp(1rem, 4vw, 1.4rem) 0.85rem;
+    border-top: 0;
+  }
+  .order-cart .ticket__legal { display: none; }
+  .order-cart .ticket__sent { margin-top: 0.55rem; }
+
+  /* So the bar never covers the last item card or the note under it. */
+  #order { padding-bottom: clamp(7rem, 22vw, 9rem); }
+}
+
+/* --------------------------------------------------------------------------
    14. Menu tables
    -------------------------------------------------------------------------- */
 /* Keeping the price list narrower stops the prices drifting miles away
