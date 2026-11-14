@@ -55,7 +55,46 @@ http.createServer(async (req, res) => {
     return checkout(req, shim(res));
   }
   if (p === '/__square_payload') { shim(res).status(200).json(lastSquarePayload || {}); return; }
-  if (p === '/fake-square') { res.setHeader('Content-Type','text/html'); return res.end('<h1 id="sq">SQUARE CHECKOUT STUB</h1>'); }
+  if (p === '/fake-square') {
+    /* Stands in for Square's hosted payment page so the flow can be walked
+       end to end with no credentials and no real money. It shows exactly
+       what the server asked Square to charge for. */
+    const li = (lastSquarePayload && lastSquarePayload.order.line_items) || [];
+    const total = li.reduce((s, l) => s + l.base_price_money.amount * Number(l.quantity), 0);
+    const rows = li.map(function (l) {
+      const money = '$' + (l.base_price_money.amount * Number(l.quantity) / 100).toFixed(2);
+      return '<li><span>' + l.quantity + '&times; ' + l.name +
+             '<br><small>' + (l.note || '') + '</small></span><span>' + money + '</span></li>';
+    }).join('');
+    res.setHeader('Content-Type', 'text/html');
+    return res.end('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
+'<meta name="viewport" content="width=device-width,initial-scale=1">' +
+'<title>Stand-in for Square</title><style>' +
+'body{margin:0;background:#0c0908;color:#f7efe2;font:16px/1.5 system-ui,sans-serif;' +
+'display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}' +
+'.box{max-width:460px;width:100%;background:#16100d;border:1px solid rgba(255,138,31,.3);' +
+'border-radius:14px;padding:28px}' +
+'h1{font-size:1.1rem;margin:0 0 6px;color:#ffc02e}' +
+'p.sub{margin:0 0 22px;color:#a2938a;font-size:.9rem}' +
+'ul{list-style:none;margin:0 0 4px;padding:0}' +
+'li{display:flex;justify-content:space-between;gap:12px;padding:9px 0;' +
+'border-bottom:1px dashed rgba(247,239,226,.16);font-size:.92rem}' +
+'li small{color:#968779}' +
+'li span:last-child{color:#ffc02e;font-variant-numeric:tabular-nums;white-space:nowrap}' +
+'.tot{display:flex;justify-content:space-between;font-weight:700;font-size:1.15rem;margin:16px 0 20px}' +
+'.note{font-size:.78rem;color:#968779;line-height:1.55}a{color:#ffc02e}' +
+'</style></head><body><div class="box">' +
+'<h1 id="sq">This is where Square&rsquo;s payment page opens</h1>' +
+'<p class="sub">Local demo &mdash; no real card, no real charge.</p>' +
+'<ul>' + rows + '</ul>' +
+'<div class="tot"><span>Total</span><span>$' + (total / 100).toFixed(2) + '</span></div>' +
+'<p class="note">On the real site this is Square&rsquo;s own checkout, where the customer ' +
+'types their card. Paying creates the order in Square so the kitchen sees it, then sends ' +
+'them to <a href="/order-confirmed">the confirmation page</a>.<br><br>' +
+'These prices came from the server, not from the browser &mdash; that is the whole point ' +
+'of the hand-off. <a href="/find-us#order">Back to the order page</a>.</p>' +
+'</div></body></html>');
+  }
 
   if (p === '/') p = '/home';
   let file = path.join(ROOT, p);
