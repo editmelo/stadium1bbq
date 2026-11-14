@@ -369,43 +369,13 @@ way to diagnose a failure without reading someone's enquiry.
 
 ### Setting it up
 
-**1. Make the Sheet.** A new Google Sheet, on whichever account should own
-the leads. Shon's is better long term — she owns the data and the emails
-come from her own account. Note that moving the script to another account
-later means redeploying it, so it is worth deciding now.
+Step by step, with the troubleshooting, in **[`tools/SETUP.md`](tools/SETUP.md)**
+— kept next to the script it tells you to paste. About ten minutes: make a
+Sheet, paste in `tools/forms-apps-script.gs`, deploy it as a web app, then set
+`FORMS_ENDPOINT` and `FORMS_SECRET` in Vercel and redeploy.
 
-**2. Add the script.** In the Sheet: **Extensions → Apps Script**. Delete
-whatever is in the editor and paste all of `tools/forms-apps-script.gs`.
-
-**3. Set the secret.** Near the top of the script, replace
-`PASTE_THE_SAME_SECRET_YOU_PUT_IN_VERCEL` with a long random string. Generate
-one with `openssl rand -hex 32`. Keep it to hand for step 5. Save.
-
-**4. Deploy it.** **Deploy → New deployment**. Next to "Select type" choose
-**Web app**. Set:
-
-- **Execute as:** Me
-- **Who has access:** Anyone
-
-Click **Deploy** and accept the permissions prompt — it is asking to write to
-the Sheet and send mail as that account, which is what it does. Copy the
-deployment URL; it ends in `/exec`.
-
-> Use the `/exec` URL, not `/dev`. The `/dev` one only works for people with
-> edit access to the script and always runs unsaved code.
-
-**5. Tell the site.** In Vercel → `stadium1bbq` → **Settings → Environment
-Variables**, add to **Production**:
-
-| Name | Value |
-| --- | --- |
-| `FORMS_ENDPOINT` | the `/exec` URL from step 4 |
-| `FORMS_SECRET` | the same random string from step 3 |
-
-Then **redeploy** — environment variables only reach a new build.
-
-**6. Check it.** Submit the contact form on `/about` with your own details.
-A row should appear in the Sheet and an email in Shon's inbox within seconds.
+The secret belongs in Apps Script and Vercel only. Never commit it to
+`tools/forms-apps-script.gs`; that file is in version control.
 
 ### Until it is set up
 
