@@ -11,3 +11,9 @@
 
 # Logs
 *.log
+
+# Vercel CLI link + pulled env. .vercel holds project/org ids and .env*
+# can hold the Square token, so neither belongs in the repo.
+.vercel/
+.env
+.env.*
