@@ -9,7 +9,11 @@ SITE="$(dirname "$HERE")"
 TMP="$(mktemp -d)"
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
-cleanup() { kill $SRV1 $SRV2 $CHR 2>/dev/null; rm -rf "$TMP"; }
+cleanup() {
+  kill $SRV1 $SRV2 $CHR 2>/dev/null
+  sleep 1                      # let Chrome finish writing its profile
+  rm -rf "$TMP" 2>/dev/null
+}
 trap cleanup EXIT
 
 # The no-credentials variant is generated from the same server so the two
@@ -28,4 +32,5 @@ sleep 3
 fail=0
 node "$HERE/cart.test.js"    || fail=1
 node "$HERE/offline.test.js" || fail=1
+node "$HERE/forms.test.js"   || fail=1
 exit $fail

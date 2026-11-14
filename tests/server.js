@@ -10,6 +10,15 @@ const PORT = Number(process.argv[3] || 8787);
 /* Square stand-in: the real checkout.js calls global fetch. */
 const realFetch = global.fetch;
 global.fetch = async function (url, opts) {
+  if (String(url).includes('/__apps_script')) {
+    /* Stands in for the Apps Script web app: records what arrived so the
+       tests can inspect it, and can be told to fail on demand. */
+    lastForm = JSON.parse(opts.body);
+    if (formsMode === 'fail') {
+      return { ok: true, status: 200, json: async () => ({ ok: false, message: 'Sheet unavailable' }) };
+    }
+    return { ok: true, status: 200, json: async () => ({ ok: true, message: 'Received' }) };
+  }
   if (String(url).includes('/v2/online-checkout/payment-links')) {
     const body = JSON.parse(opts.body);
     lastSquarePayload = body;
@@ -24,13 +33,22 @@ global.fetch = async function (url, opts) {
   return realFetch(url, opts);
 };
 let lastSquarePayload = null;
+let lastForm = null;
+let formsMode = 'ok';            /* 'ok' | 'fail' | 'unconfigured' */
 
 process.env.SQUARE_ACCESS_TOKEN = 'STUB_TOKEN';
 process.env.SQUARE_LOCATION_ID  = 'STUB_LOCATION';
 process.env.SQUARE_ENV          = 'sandbox';
+process.env.FORMS_ENDPOINT      = 'https://script.google.com/__apps_script/exec';
+process.env.FORMS_SECRET        = 'STUB_FORMS_SECRET';
+/* The real default is 3/min. The suite fires far more than that from one
+   address, so it is raised here and lowered deliberately by the test that
+   actually checks the limit. */
+process.env.FORMS_RATE_LIMIT    = '500';
 
 const menu     = require(path.join(ROOT, 'api/menu.js'));
 const checkout = require(path.join(ROOT, 'api/checkout.js'));
+let   contact  = require(path.join(ROOT, 'api/contact.js'));
 
 const TYPES = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8',
   '.js':'text/javascript; charset=utf-8', '.png':'image/png', '.jpg':'image/jpeg',
@@ -53,6 +71,36 @@ http.createServer(async (req, res) => {
     for await (const c of req) raw += c;
     req.body = raw;
     return checkout(req, shim(res));
+  }
+  if (p === '/api/contact') {
+    let raw = '';
+    for await (const c of req) raw += c;
+    req.body = raw;
+    /* 'unconfigured' reproduces the state before the Apps Script URL is
+       set, which is what the live site is in until Lauren hooks it up. */
+    const keep = [process.env.FORMS_ENDPOINT, process.env.FORMS_SECRET];
+    if (formsMode === 'unconfigured') {
+      delete process.env.FORMS_ENDPOINT; delete process.env.FORMS_SECRET;
+    }
+    try { return await contact(req, shim(res)); }
+    finally { process.env.FORMS_ENDPOINT = keep[0]; process.env.FORMS_SECRET = keep[1]; }
+  }
+  if (p === '/__forms_last') { shim(res).status(200).json(lastForm || {}); return; }
+  if (p === '/__forms_ratelimit') {
+    process.env.FORMS_RATE_LIMIT = url.searchParams.get('n') || '500';
+    /* The limiter keeps its counts in module scope, and every request in
+       this suite comes from the same address, so earlier tests would
+       otherwise have already used the quota. Reloading gives the rate
+       limit test a clean slate instead of a poisoned one. */
+    delete require.cache[require.resolve(path.join(ROOT, 'api/contact.js'))];
+    contact = require(path.join(ROOT, 'api/contact.js'));
+    shim(res).status(200).json({ limit: process.env.FORMS_RATE_LIMIT });
+    return;
+  }
+  if (p === '/__forms_mode') {
+    formsMode = url.searchParams.get('mode') || 'ok';
+    shim(res).status(200).json({ mode: formsMode });
+    return;
   }
   if (p === '/__square_payload') { shim(res).status(200).json(lastSquarePayload || {}); return; }
   if (p === '/fake-square') {

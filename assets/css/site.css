@@ -1258,6 +1258,24 @@ tr[data-shot]:focus-visible { outline: 3px solid var(--gold); outline-offset: -3
 }
 .notice strong { color: var(--gold); }
 
+/* A failed send must not look like a successful one. */
+.notice--bad {
+  border-color: rgba(239,95,12,.45);
+  background: rgba(239,95,12,.09);
+}
+.notice--bad strong { color: var(--flame); }
+
+/* The honeypot. Not display:none, because some bots skip hidden inputs;
+   this is off-screen and unreachable for anyone browsing or using a
+   screen reader, while still being a real field a bot will fill in. */
+.hp {
+  position: absolute !important;
+  left: -9999px;
+  width: 1px; height: 1px;
+  overflow: hidden;
+}
+
+
 /* --------------------------------------------------------------------------
    16. Contact cards
    -------------------------------------------------------------------------- */

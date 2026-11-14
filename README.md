@@ -53,28 +53,16 @@ deploy as-is — the page says so honestly and keeps the Square link. See
 [Ordering on the site](#ordering-on-the-site) for exactly what to add and
 where the token comes from.
 
-### 1. Connect the forms — they currently go nowhere
+### 1. Connect the forms — built, waiting on the Google Sheet
 
-Both forms (catering quote, contact) validate properly but **do not send
-anything**. On submit they show an honest message saying so and point people
-at the phone and email instead. Nothing silently disappears and nothing
-falsely says "thank you, we'll be in touch."
+Both forms are wired to `/api/contact` and fully tested. They do not send yet
+only because `FORMS_ENDPOINT` and `FORMS_SECRET` are not set in Vercel. Until
+they are, submitting says plainly that it did not send and gives the phone
+number, with the customer's answers still on screen.
 
-To connect them, pick a form service (Formspree, Basin and Netlify Forms all
-work on a static site), then in `catering/index.html` and `about/index.html`:
-
-```html
-<!-- change this -->
-<form class="form" data-quote-form data-no-endpoint novalidate>
-
-<!-- to this -->
-<form class="form" data-quote-form method="POST"
-      action="https://formspree.io/f/YOUR_ID" novalidate>
-```
-
-Removing `data-no-endpoint` is what switches off the "not connected" message —
-the handler in `assets/js/site.js` only binds to forms that have that
-attribute. Then delete that block in `site.js` once both forms are live.
+Setup is about ten minutes: make a Google Sheet, paste in
+`tools/forms-apps-script.gs`, deploy it as a web app, put the URL and secret
+into Vercel. Full steps in [Where the forms go](#where-the-forms-go).
 
 ### 2. Pricing — from Shon's October 2026 sheets
 
@@ -356,6 +344,102 @@ Needs Node and Google Chrome; no install step. It drives a headless
 browser through the real cart against the real API handlers with Square
 stubbed out, and checks both states — credentials set and credentials
 missing. 53 checks at the time of writing.
+
+---
+
+## Where the forms go
+
+The catering quote form and the contact form both post to `/api/contact`,
+which checks the submission and hands it to a **Google Apps Script web app**.
+That script writes a row to a Google Sheet and emails Shon, with Reply-To
+set to the customer so hitting reply goes to them.
+
+Submissions go to **Shon only** (`stadium1bbq@stadium1bbq.com`). Nothing is
+copied to Edit Me Lo, by Lauren's decision — so the server logs whether each
+submission was delivered, and nothing about who sent it, which is the only
+way to diagnose a failure without reading someone's enquiry.
+
+### The pieces
+
+| File | What it does |
+| --- | --- |
+| `tools/forms-apps-script.gs` | Paste into Apps Script. Writes the row, sends the email. |
+| `api/contact.js` | Validates, drops spam, forwards to the script. |
+| `assets/js/site.js` | Submits the form and reports honestly what happened. |
+
+### Setting it up
+
+**1. Make the Sheet.** A new Google Sheet, on whichever account should own
+the leads. Shon's is better long term — she owns the data and the emails
+come from her own account. Note that moving the script to another account
+later means redeploying it, so it is worth deciding now.
+
+**2. Add the script.** In the Sheet: **Extensions → Apps Script**. Delete
+whatever is in the editor and paste all of `tools/forms-apps-script.gs`.
+
+**3. Set the secret.** Near the top of the script, replace
+`PASTE_THE_SAME_SECRET_YOU_PUT_IN_VERCEL` with a long random string. Generate
+one with `openssl rand -hex 32`. Keep it to hand for step 5. Save.
+
+**4. Deploy it.** **Deploy → New deployment**. Next to "Select type" choose
+**Web app**. Set:
+
+- **Execute as:** Me
+- **Who has access:** Anyone
+
+Click **Deploy** and accept the permissions prompt — it is asking to write to
+the Sheet and send mail as that account, which is what it does. Copy the
+deployment URL; it ends in `/exec`.
+
+> Use the `/exec` URL, not `/dev`. The `/dev` one only works for people with
+> edit access to the script and always runs unsaved code.
+
+**5. Tell the site.** In Vercel → `stadium1bbq` → **Settings → Environment
+Variables**, add to **Production**:
+
+| Name | Value |
+| --- | --- |
+| `FORMS_ENDPOINT` | the `/exec` URL from step 4 |
+| `FORMS_SECRET` | the same random string from step 3 |
+
+Then **redeploy** — environment variables only reach a new build.
+
+**6. Check it.** Submit the contact form on `/about` with your own details.
+A row should appear in the Sheet and an email in Shon's inbox within seconds.
+
+### Until it is set up
+
+The forms stay honest. `/api/contact` returns 503, and the page says it did
+not send and gives the phone number, with the customer's answers still on
+screen to copy. **It never claims a message was sent when it was not** —
+that rule is what `tests/forms.test.js` exists to protect.
+
+### Spam
+
+Two defences, because nobody is screening before Shon's inbox:
+
+- A **honeypot** field, off-screen and hidden from screen readers. People
+  leave it empty; bots fill it. A submission that fills it is answered with
+  a cheerful 200 and thrown away — a bot told it failed simply retries.
+- A **rate limit**, three submissions a minute per address. Tune it with the
+  `FORMS_RATE_LIMIT` environment variable if a real person ever trips it.
+
+Fields the form does not declare are discarded rather than passed on, so a
+crafted post cannot add columns to the Sheet.
+
+### Changing the fields
+
+Add the field to the HTML, to `FORMS` in `api/contact.js`, and to `FORMS` in
+`tools/forms-apps-script.gs` — then redeploy the script (**Deploy → Manage
+deployments → edit → new version**, which keeps the same URL). The Sheet gains
+the column on the next submission only if the tab is new; for an existing tab,
+add the header yourself.
+
+### Email limits
+
+Apps Script sends up to 100 emails a day from a personal Gmail account, 1,500
+from a Google Workspace one. Comfortable for a catering enquiry form; worth
+knowing it exists.
 
 ---
 

@@ -53,35 +53,84 @@
   }
 
   /* ---- Forms --------------------------------------------------------
-     No submission endpoint is connected yet, so forms do not send.
-     Rather than fake a success message, tell people plainly and point
-     them at the phone, text and email that do work today.
+     Submits to /api/contact, which prices nothing and decides nothing —
+     it checks the submission and hands it to the Sheet that records it
+     and emails Shon.
 
-     TO CONNECT: see README.md — add the endpoint to the <form> tag and
-     delete the block below.
+     The one rule here: never tell someone their message was sent when it
+     was not. A failed send says so and gives the phone number, with
+     their answers still on screen to copy across.
      ------------------------------------------------------------------ */
-  var forms = document.querySelectorAll('form[data-no-endpoint]');
+  var forms = document.querySelectorAll('form[data-site-form]');
+
+  var FALLBACK =
+    'Reach Shon directly &mdash; ' +
+    '<a href="tel:+13173321327">call or text (317) 332-1327</a> or ' +
+    '<a href="mailto:stadium1bbq@stadium1bbq.com">email stadium1bbq@stadium1bbq.com</a>. ' +
+    'Your answers are still on screen, so you can copy them across.';
 
   Array.prototype.forEach.call(forms, function (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
+    var kind = form.getAttribute('data-site-form');
+    var box = form.querySelector('[data-form-status]');
+    var button = form.querySelector('button[type="submit"]');
+    var sending = false;
 
-      if (!form.reportValidity()) return;
-
-      var box = form.querySelector('[data-form-status]');
+    function say(html, bad) {
       if (!box) return;
-
       box.hidden = false;
-      box.innerHTML =
-        '<strong>This form isn\'t connected yet.</strong> ' +
-        'Nothing was sent. Until it\'s hooked up, reach Shon directly &mdash; ' +
-        '<a href="tel:+13173321327">call or text (317) 332-1327</a> or ' +
-        '<a href="mailto:stadium1bbq@stadium1bbq.com">email stadium1bbq@stadium1bbq.com</a>. ' +
-        'Your answers are still on screen, so you can copy them across.';
-
+      box.innerHTML = html;
+      box.classList.toggle('notice--bad', !!bad);
       box.setAttribute('tabindex', '-1');
       box.focus({ preventScroll: true });
       box.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (sending || !form.reportValidity()) return;
+
+      var fields = {};
+      var honeypot = '';
+      Array.prototype.forEach.call(form.elements, function (el) {
+        if (!el.name || el.type === 'submit') return;
+        if (el.name === 'website') { honeypot = el.value; return; }
+        fields[el.name] = el.value;
+      });
+
+      sending = true;
+      if (button) { button.disabled = true; button.dataset.label = button.textContent;
+                    button.textContent = 'Sending…'; }
+      if (box) { box.hidden = true; box.classList.remove('notice--bad'); }
+
+      function done(ok, html) {
+        sending = false;
+        if (button) { button.disabled = false;
+                      button.textContent = button.dataset.label || 'Send'; }
+        say(html, !ok);
+        if (ok) form.reset();
+      }
+
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ form: kind, website: honeypot, fields: fields })
+      }).then(function (r) {
+        return r.json().then(function (d) { return { ok: r.ok, data: d }; });
+      }).then(function (res) {
+        if (res.ok && res.data && res.data.ok) {
+          done(true, '<strong>Got it &mdash; thank you.</strong> ' +
+            (kind === 'quote'
+              ? 'Shon has your request and will be in touch about your event.'
+              : 'Shon has your message and will get back to you.'));
+          return;
+        }
+        /* Everything else is a failure, including the honest 503 while the
+           Sheet is still being hooked up. Say so; do not claim it sent. */
+        done(false, '<strong>That didn&rsquo;t send.</strong> ' +
+          ((res.data && res.data.error) ? res.data.error + ' ' : '') + FALLBACK);
+      }).catch(function () {
+        done(false, '<strong>That didn&rsquo;t send.</strong> ' + FALLBACK);
+      });
     });
   });
 
