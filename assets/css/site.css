@@ -66,7 +66,14 @@
    -------------------------------------------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* The masthead is sticky and 74px tall, so an anchor jump would put
+     the target's heading underneath it. Applies to every anchor on the
+     site: #order, #build, #seasonal, #family. */
+  scroll-padding-top: 90px;
+}
 
 body {
   margin: 0;
@@ -278,6 +285,19 @@ a { color: inherit; }
 
 .nav__cta { margin-left: 0.4rem; padding: 0.7rem 1.2rem; }
 
+/* The business has two front doors: a quote for catering, a plate at the
+   market. The filled button stays with catering because that is the bigger
+   booking; ordering gets the outline so both are reachable without the two
+   competing. */
+.nav__cta--order { margin-left: 0.6rem; }
+
+/* Six links plus two buttons is tight just above the burger breakpoint, so
+   the link gaps tighten before anything is allowed to wrap. */
+@media (max-width: 1180px) and (min-width: 901px) {
+  .nav { gap: 1.15rem; }
+  .nav__cta, .nav__cta--order { padding: 0.65rem 0.9rem; letter-spacing: 0.1em; }
+}
+
 .burger {
   display: none; margin-left: auto;
   width: 46px; height: 46px;
@@ -310,6 +330,10 @@ a { color: inherit; }
   .nav__link { padding: 1rem 0; border-bottom: 1px solid rgba(247,239,226,.08); font-size: 0.95rem; }
   .nav__link[aria-current="page"]::after { display: none; }
   .nav__cta { margin: 1.25rem 0 0; }
+  /* Stacked in the drawer, the second button needs its own gap and
+     neither should sit flush against the links above. */
+  .nav__cta--order { margin: 1.25rem 0 0; }
+  .nav__cta--order + .nav__cta { margin-top: 0.7rem; }
 }
 
 /* --------------------------------------------------------------------------
