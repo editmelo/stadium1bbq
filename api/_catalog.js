@@ -99,11 +99,19 @@ function priceLine(line) {
     parts.push(names.join(', '));
   }
 
+  /* The choices go in the NAME, not only the note. Square's hosted
+     checkout page shows the line item name and does not show the note,
+     so a customer about to pay would otherwise see "6 Wings" with no
+     sign of the sides they picked, and no way to catch a mistake. The
+     note stays as well — it is what reads cleanly in Order Manager. */
+  const choiceText = parts.join(' · ');
+  const label = choiceText ? item.name + ' (' + choiceText + ')' : item.name;
+
   return {
-    name: item.name.slice(0, 512),
+    name: label.slice(0, 512),
     quantity: String(qty),
     base_price_money: { amount: item.price, currency: 'USD' },
-    note: parts.join(' · ').slice(0, 2000)
+    note: choiceText.slice(0, 2000)
   };
 }
 

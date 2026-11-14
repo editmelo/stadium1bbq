@@ -180,6 +180,19 @@ async function target() {
   check('server-side total matches the cart',
     '$' + (li.reduce((s,l)=>s + l.base_price_money.amount * Number(l.quantity), 0)/100).toFixed(2),
     totalBefore);
+  /* Square's hosted checkout page shows the line item NAME and does not
+     show the note, so the choices have to survive into the name or a
+     customer cannot check their own order before paying. */
+  check('rib tips name carries both sides',
+    li.some(l => l.name === 'Rib Tips Plate (Mac & Cheese, Baked Beans)'), true);
+  check('bowl name carries meat and side',
+    li.some(l => l.name === 'Build Your Own Bowl (Brisket \u00b7 Mac & Cheese)'), true);
+  check('every line item names its choices',
+    li.every(l => /\(.+\)$/.test(l.name)), true);
+  check('notes still carry the choices for Order Manager',
+    li.every(l => typeof l.note === 'string' && l.note.length > 0), true);
+  check('names stay inside Square\u2019s 512 character limit',
+    li.every(l => l.name.length <= 512), true);
   check('quantities are strings (Square requires it)',
     li.every(l => typeof l.quantity === 'string'), true);
   check('redirect points at /order-confirmed',
@@ -188,7 +201,9 @@ async function target() {
     payload.checkout_options.ask_for_shipping_address, false);
   check('idempotency key present',
     typeof payload.idempotency_key === 'string' && payload.idempotency_key.length > 10, true);
-  console.log('  ..   line items: ' + JSON.stringify(li.map(l => l.quantity + '× ' + l.name + ' (' + l.note + ')')));
+  /* name is what Square shows the customer; note is what reads in Order
+     Manager. Printed apart so neither is mistaken for the other. */
+  li.forEach(l => console.log('  ..   ' + l.quantity + '× ' + l.name + '   [note: ' + l.note + ']'));
 
   console.log('\n--- /order-confirmed ---');
   await goto('http://localhost:8787/order-confirmed');
