@@ -1,2 +1,7 @@
 # Dev-only. The regression harness has no business on the live site.
 tests/
+
+# Source for the Apps Script, meant to be pasted into Google, not served.
+# It carries a placeholder where the shared secret goes; keeping it off the
+# site means a real secret pasted in by mistake is never public.
+tools/
